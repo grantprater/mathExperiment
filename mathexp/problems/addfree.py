@@ -11,6 +11,7 @@ element forbids that element.
 from __future__ import annotations
 
 import copy
+import json
 import random
 import time
 from collections import defaultdict
@@ -20,7 +21,7 @@ from .base import Family
 GROUPS = ("int", "cyclic", "fpk")
 NAMED_EQUATIONS = ("3ap", "sumfree", "sidon")
 PRIMES = (2, 3, 5, 7)
-FIELDS = ("group", "p", "equation")
+FIELDS = ("group", "p", "equation", "equation2")
 MAX_COEF = 9
 MAX_AMBIENT = 128
 
@@ -70,9 +71,18 @@ class Ambient:
         return tuple(acc)
 
 
-def _solutions(spec: dict, amb: Ambient) -> list[frozenset]:
-    """Every forbidden configuration as a set of element indices."""
-    eq = spec["equation"]
+def _eq_key(eq) -> str:
+    return json.dumps(eq, sort_keys=True, separators=(",", ":"))
+
+
+def _invariant(eq) -> bool:
+    """x -> x + t maps solutions to solutions iff the coefficients balance
+    (3ap: 1+1=2; sidon: always; generic: a+b=c)."""
+    return eq in ("3ap", "sidon") or (isinstance(eq, dict) and eq["a"] + eq["b"] == eq["c"])
+
+
+def _solutions(eq, amb: Ambient) -> list[frozenset]:
+    """Every forbidden configuration of one equation as a set of element indices."""
     N = amb.N
     edges: set[frozenset] = set()
     if eq == "sidon":
@@ -193,6 +203,11 @@ class AddFree(Family):
         s = self.normalize(spec)
         if s.get("group") != "fpk":
             s["p"] = None
+        if s.get("equation2") is None:
+            # absent, not null: specs without a second equation hash exactly as in run 1
+            s.pop("equation2", None)
+        elif s.get("equation") is not None and _eq_key(s["equation2"]) < _eq_key(s["equation"]):
+            s["equation"], s["equation2"] = s["equation2"], s["equation"]
         return s
 
     def params(self, spec: dict) -> dict[str, float]:
@@ -202,6 +217,9 @@ class AddFree(Family):
         eq = spec.get("equation")
         if isinstance(eq, dict):
             out.update({k: eq[k] for k in ("a", "b", "c")})
+        eq2 = spec.get("equation2")
+        if isinstance(eq2, dict):
+            out.update({k + "2": eq2[k] for k in ("a", "b", "c")})
         return {k: v for k, v in out.items() if v is not None}
 
     def validate(self, spec: dict) -> list[str]:
@@ -218,18 +236,15 @@ class AddFree(Family):
         if p is not None and p not in PRIMES:
             errs.append(f"p must be null or one of {PRIMES}")
         eq = spec.get("equation")
-        if isinstance(eq, str):
-            if eq not in NAMED_EQUATIONS:
-                errs.append(f"equation must be one of {NAMED_EQUATIONS} or {{a,b,c}}")
-        elif isinstance(eq, dict):
-            if set(eq) != {"a", "b", "c"}:
-                errs.append("generic equation needs exactly the keys a, b, c")
-            elif not all(isinstance(eq[k], int) and not isinstance(eq[k], bool) and 1 <= abs(eq[k]) <= MAX_COEF for k in "abc"):
-                errs.append(f"coefficients must be non-zero integers with |c| <= {MAX_COEF}")
-            elif g == "fpk" and p in PRIMES and any(eq[k] % p == 0 for k in "abc"):
-                errs.append("coefficients must be non-zero mod p")
-        else:
+        if eq is None:
             errs.append("equation missing")
+        else:
+            errs += self._equation_errors("equation", eq, g, p)
+        eq2 = spec.get("equation2")
+        if eq2 is not None:
+            errs += self._equation_errors("equation2", eq2, g, p)
+            if eq is not None and _eq_key(eq2) == _eq_key(eq):
+                errs.append("equation2 must differ from equation (use null for a single equation)")
         ns = spec.get("ns")
         if ns is not None:
             if not isinstance(ns, list) or not ns or not all(isinstance(x, int) and not isinstance(x, bool) and x >= 1 for x in ns):
@@ -240,8 +255,23 @@ class AddFree(Family):
                 errs.append("int/cyclic n must be <= 40")
         return errs
 
-    def _equation_text(self, spec: dict) -> str:
-        eq = spec["equation"]
+    @staticmethod
+    def _equation_errors(field: str, eq, g, p) -> list[str]:
+        if isinstance(eq, str):
+            if eq not in NAMED_EQUATIONS:
+                return [f"{field} must be one of {NAMED_EQUATIONS} or {{a,b,c}}"]
+        elif isinstance(eq, dict):
+            if set(eq) != {"a", "b", "c"}:
+                return [f"generic {field} needs exactly the keys a, b, c"]
+            if not all(isinstance(eq[k], int) and not isinstance(eq[k], bool) and 1 <= abs(eq[k]) <= MAX_COEF for k in "abc"):
+                return [f"{field} coefficients must be non-zero integers with |c| <= {MAX_COEF}"]
+            if g == "fpk" and p in PRIMES and any(eq[k] % p == 0 for k in "abc"):
+                return [f"{field} coefficients must be non-zero mod p"]
+        else:
+            return [f"{field} must be a name or an {{a,b,c}} object"]
+        return []
+
+    def _equation_text(self, spec: dict, eq) -> str:
         if eq == "3ap":
             return "A contains no x, y, z with x ≠ y and x + y = 2z"
         if eq == "sumfree":
@@ -265,18 +295,19 @@ class AddFree(Family):
         else:
             amb = (f"Let G = F_{spec['p']}^n, the n-dimensional vector space over the field with "
                    f"{spec['p']} elements. Consider subsets A ⊆ G")
-        return f"{amb} such that {self._equation_text(spec)}. Let f(n) be the largest possible |A|."
+        cond = self._equation_text(spec, spec["equation"])
+        if spec.get("equation2") is not None:
+            cond += ", and " + self._equation_text(spec, spec["equation2"])
+        return f"{amb} such that {cond}. Let f(n) be the largest possible |A|."
 
     def truth(self, spec: dict, n: int, time_limit: float | None) -> int | None:
         amb = Ambient(spec["group"], n, spec.get("p"))
         t0 = time.monotonic()
-        edges = _solutions(spec, amb)
+        eqs = [spec["equation"]] + ([spec["equation2"]] if spec.get("equation2") is not None else [])
+        edges = list({e for eq in eqs for e in _solutions(eq, amb)})
         left = None if time_limit is None else max(0.0, time_limit - (time.monotonic() - t0))
-        eq = spec["equation"]
-        # In a group, x -> x + t maps solutions to solutions iff the equation's
-        # coefficients balance (3ap: 1+1=2; sidon: always; generic: a+b=c).
-        invariant = spec["group"] != "int" and (
-            eq in ("3ap", "sidon") or (isinstance(eq, dict) and eq["a"] + eq["b"] == eq["c"]))
+        # In a group, WLOG 0 is in the set when every equation is translation invariant.
+        invariant = spec["group"] != "int" and all(_invariant(eq) for eq in eqs)
         try:
             return max_free_set(amb.N, edges, left, force_first=invariant)
         except _Timeout:
@@ -303,7 +334,7 @@ class AddFree(Family):
 
     def _mutate_once(self, spec: dict, rng: random.Random) -> dict | None:
         s = copy.deepcopy(spec)
-        op = rng.choice(["equation", "coef", "coef", "group", "p"])
+        op = rng.choice(["equation", "coef", "coef", "group", "p", "equation2"])
         eq = s["equation"]
         if op == "equation":
             opts = [e for e in NAMED_EQUATIONS if e != eq] + [{"a": 1, "b": 1, "c": 1}, {"a": 1, "b": 2, "c": 3}]
@@ -326,6 +357,14 @@ class AddFree(Family):
             if s["group"] != "fpk":
                 return None
             s["p"] = rng.choice([q for q in PRIMES if q != s["p"]])
+        elif op == "equation2":
+            # add, change or drop the second equation
+            if s.get("equation2") is not None and rng.random() < 0.4:
+                s["equation2"] = None
+            else:
+                opts = [e for e in NAMED_EQUATIONS if e != eq and e != s.get("equation2")] + \
+                    [{"a": 1, "b": 1, "c": 1}, {"a": 1, "b": 2, "c": 3}, {"a": 1, "b": 1, "c": 3}]
+                s["equation2"] = rng.choice(opts)
         return s
 
     def schema_text(self) -> str:
@@ -337,4 +376,5 @@ class AddFree(Family):
     "sumfree" no x, y, z in A (x = y allowed) with x + y = z;
     "sidon"   all sums a + b (a <= b, a, b in A) distinct;
     {"a": int, "b": int, "c": int}  no x, y, z in A, not all equal, with a*x + b*y = c*z (non-zero coefficients, |coef| <= 9).
+- "equation2": null, or a second equation in the same forms, different from "equation"; A must then avoid solutions of both. Leave it null for a single equation.
 - "ns": list of n values (int/cyclic n <= 40; fpk p^n <= 128); leave it out to keep the parent's."""

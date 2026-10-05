@@ -69,3 +69,47 @@ def test_problem_id_ignores_ns_and_order():
 def test_timeout_returns_none():
     # Sidon in [1..36] needs far more than 1024 search nodes
     assert B.truth({"group": "int", "p": 3, "equation": "sidon"}, 36, 0.001) is None
+
+
+# ids recorded by run 1 (store/a4-*/problems.jsonl), before equation2 existed
+RUN1_IDS = [({"group": "fpk", "p": 3, "equation": "3ap"}, "5844ffafe50d"),
+            ({"group": "cyclic", "p": 3, "equation": "sumfree"}, "93f362bec5e1"),
+            ({"group": "int", "p": 3, "equation": "sidon"}, "f7cb64d70afa"),
+            ({"group": "fpk", "p": 5, "equation": {"a": 1, "b": 1, "c": 2}}, "f0826f82acbc")]
+
+
+@pytest.mark.parametrize("spec,pid", RUN1_IDS)
+def test_family_b_ids_stable_without_equation2(spec, pid):
+    assert B.problem_id(spec) == pid
+    assert B.problem_id({**spec, "equation2": None}) == pid
+
+
+def test_equation2():
+    two = {"group": "int", "equation": "sumfree", "equation2": "3ap"}
+    assert B.validate(two) == []
+    assert B.problem_id(two) == B.problem_id({"group": "int", "equation": "3ap", "equation2": "sumfree"})
+    assert B.problem_id(two) != B.problem_id({"group": "int", "equation": "3ap"})
+    assert B.validate({**two, "equation2": "sumfree"})  # must differ from equation
+    assert B.validate({**two, "equation2": {"a": 1, "b": 0, "c": 1}})
+    text = B.render(two)
+    assert "x + y = z" in text and "x + y = 2z" in text
+    # avoiding both equations: brute force against an explicit check for small n
+    from itertools import combinations
+
+    def ok(A):
+        S = set(A)
+        sumfree = not any(x + y in S for x in A for y in A)
+        ap = not any(x != y and (x + y) % 2 == 0 and (x + y) // 2 in S for x in A for y in A)
+        return sumfree and ap
+    for n in range(4, 11):
+        best = max(k for k in range(n + 1) if any(ok(A) for A in combinations(range(1, n + 1), k)))
+        assert B.truth(two, n, 60) == best
+
+
+def test_statement_length():
+    assert A.statement_length(ODDTOWN) == 6  # the PROTOCOL example
+    assert A.statement_length({"p": 3, "int_abs": [1]}) == 2  # p dropped without a mod condition
+    assert A.statement_length({"p": 2, "int_abs": [0, 2], "int_min": 1}) == 5
+    assert B.statement_length({"group": "int", "p": 3, "equation": "3ap"}) == 4
+    assert B.statement_length({"group": "fpk", "p": 3, "equation": {"a": 1, "b": 2, "c": 3}}) == 8
+    assert B.statement_length({"group": "cyclic", "equation": "sidon", "equation2": {"a": 1, "b": 1, "c": 3}}) == 8

@@ -87,6 +87,21 @@ class Family(ABC):
         """Spec field names (excluding ns)."""
         raise NotImplementedError
 
+    def statement_length(self, spec: dict) -> int:
+        """L(spec), PROTOCOL.md "Run 2": atoms of the canonical spec excluding ns. Each
+        present field counts 1 for its name plus 1 per number in its value; a string or
+        boolean value counts 1. Fields the canonical form drops (null, or irrelevant like
+        p without a mod condition) count 0. A generic equation {a, b, c} counts 1 + 3."""
+        return sum(1 + _atoms(v) for k, v in self.canonical(spec).items() if k != "ns" and v is not None)
+
+
+def _atoms(v) -> int:
+    if isinstance(v, dict):
+        return sum(_atoms(x) for x in v.values())
+    if isinstance(v, (list, tuple)):
+        return sum(_atoms(x) for x in v)
+    return 1
+
 
 def changed_fields(parent: dict, child: dict) -> list[str]:
     """Spec fields (excluding ns) whose values differ between two specs."""
