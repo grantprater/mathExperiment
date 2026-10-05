@@ -64,7 +64,7 @@ def report(store: Store, run: str | None = None) -> str:
 
     out.append("== Reuse / importance of (bridge, lemma) pairs (wins only) ==")
     pairs: dict[tuple, dict] = defaultdict(lambda: {"families": set(), "problems": set(),
-                                                     "named": 0, "variant": 0})
+                                                     "named": 0, "variant": 0, "scan": 0})
     for w in weaves:
         if not w.get("win"):
             continue
@@ -79,7 +79,7 @@ def report(store: Store, run: str | None = None) -> str:
                   and lem in (w.get("lemma_ids") or ["-"]) and w.get("ratio") is not None]
         best = f"{min(ratios):.3f}" if ratios else "--"
         out.append(f"  {b:<20} {lem:<26} families={len(d['families'])} problems={len(d['problems'])} "
-                   f"(named {d['named']}, variant {d['variant']}) best g/trivial={best}")
+                   f"(named {d['named']}, variant {d['variant']}, scan {d['scan']}) best g/trivial={best}")
     if not rank:
         out.append("  (no wins)")
     out.append("")

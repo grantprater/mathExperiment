@@ -1,5 +1,63 @@
 # Results
 
+## Run 2 scan (2026-10-04)
+
+Command: `python -m mathexp scan` (defaults), one process at idle priority. Outputs:
+`scan/setfam.jsonl`, `scan/addfree.jsonl`, `scan/summary.json`, `scan/selected.jsonl`.
+
+**Golf size cap 10.** It was chosen by measuring table builds on the setfam ns 3..8,
+single-threaded:
+
+| cap | entries | build | peak memory |
+|---|---|---|---|
+| 9 | 368,679 | 3 s | 134 MB |
+| 10 | 1,746,704 | 14 to 27 s | 403 MB |
+| 11 | 8,708,681 | 92 s | 1.84 GB, over the 1.5 GB limit |
+
+The tables built at cap 10 were:
+
+| ns | entries | build |
+|---|---|---|
+| 3..8 (setfam) | 1,746,704 | 22 s |
+| 4..30 (int/cyclic) | 3,061,949 | 61 s, about 1.1 GB peak |
+| 1..6 (F_2^k) | 1,410,403 | 13 s |
+
+**Scan ns and time limit:**
+- setfam ns 3..8, because brute force at n = 8 averages 0.2 s per spec;
+- int/cyclic ns 4..30;
+- F_2^k for k = 1..6, and F_3^k for k = 1..4;
+- 5 s per (spec, n), stopping at a spec's first timeout.
+
+**Counts:**
+
+| | setfam (L ≤ 8) | addfree (L ≤ 12, the whole space) |
+|---|---|---|
+| specs enumerated | 2209 | 1062 |
+| refused (fewer than 4 values) | 0 | 66 (all of F_3^k) |
+| duplicate truth sequences | 1894 | 726 |
+| kept | 315 | 270 |
+| J > 0 among kept | 151 | 3 |
+| G(full) = cap + 1 (no golf) | 137 | 241 |
+
+- The first pass took 1197 s of wall time: setfam 205 s, addfree 992 s, mostly the
+  timeouts on F_2^6 and F_3^4.
+- A rerun from the caches takes about 11 s.
+
+**Family B scores are degenerate.** On 26 to 27 values, almost no truth sequence golfs
+under the cap. When the prefix does not golf, J = 0. So 267 of the 270 kept specs score 0,
+and 17 of the 20 family-B places in `selected.jsonl` are filled from zero scores by the
+tie-break (J, then L, then id). In effect that picks the shortest statements: the named
+int/cyclic equations.
+
+The top scorers in setfam are statements whose sequence is regular up to n = 7 and then
+breaks. For example:
+- `int_min = 2` gives 2, 5, 10, 22, 44, 93 (score 1.5);
+- `|A| ≡ 3 (mod 5)` gives C(n,3) until C(8,8) joins at n = 8;
+- `|A ∩ B| ≡ 0, 1, 4 (mod 5)` gives binom_sum(n,2) until 45 at n = 8.
+
+Several prefix witnesses of size 7 to 8 are overfits on 5 values, such as
+`isqrt((isqrt((n * isqrt(n))) ** 3))`.
+
 ## A4 run 1: fixed vs adaptive breadth (2026-10-05)
 
 **Setup:**

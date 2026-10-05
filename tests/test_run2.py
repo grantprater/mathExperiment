@@ -148,3 +148,18 @@ def test_checkable_counts_until_first_timeout(tmp_path):
     assert loop.checkable_values(B, {"group": "int", "equation": "3ap", "ns": [4, 5, 6]}) == 3
     loop.cfg.time_limit = 20.0
     assert loop.checkable_values(B, {"group": "int", "equation": "3ap", "ns": [4, 5, 6, 7, 8]}) == 4
+
+
+def test_scan_seeded_weave_run_reports(tmp_path, capsys):
+    """A4 again: scan problems as seeds with weaving; the report handles scan wins."""
+    sel = _selected(tmp_path)
+    store = tmp_path / "a4"
+    assert main(["run", "--backend", "mock", "--seeds-from", str(sel), "--top", "2", "--breadth", "fixed",
+                 "--max-calls", "6", "--store", str(store)]) == 0
+    weaves = _rows(store / "weaves.jsonl")
+    assert weaves and any(w["win"] and w["provenance"] == "scan" for w in weaves)
+    capsys.readouterr()
+    assert main(["report", "--store", str(store)]) == 0
+    out = capsys.readouterr().out
+    assert "Weave headline" in out and "scan     bounds=" in out
+    assert out.index("Weave headline") < out.index("Weave status counts")
