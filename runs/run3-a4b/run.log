@@ -397,3 +397,34 @@ problem 4ea8582b827c (variant): setfam {"p": 5, "size_mod": [2, 3], "int_mod": [
   f = {3: 4, 4: 7, 5: 10, 6: 15, 7: 21, 8: 29}  surprise mean=0.82 bits max=4.06 bits
   weave[1/probe] incidence_matrix+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[]
   weave[2/probe] incidence_matrix+diagonal_criterion+multilinear_dim: g = 'binom_sum(n,2) + comb(n,2)' -> consistent WIN tight_at=[]
+  weave[3/wide3] graph_spectrum+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[]
+problem ecd17abc4fee (variant): setfam {"p": 5, "size_mod": [2, 3, 4], "int_mod": [1, 2], "size_abs": null, "int_abs": null, "int_min": null}
+  f = {3: 4, 4: 7, 5: 11, 6: 15, 7: 21, 8: 29}  surprise mean=4.4 bits max=8.26 bits
+  weave[1/probe] incidence_matrix+gram_rank+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 4)' -> consistent tight_at=[]
+  weave[2/probe] incidence_matrix+diagonal_criterion+multilinear_dim: g = '2*binom_sum(n,2)' -> consistent WIN tight_at=[]
+  weave[3/wide3] graph_spectrum+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 4)' -> consistent tight_at=[]
+  weave[3/wide3] graph_spectrum+pigeonhole: g = '2**n' -> consistent tight_at=[]
+problem 9cf1c3941c13 (variant): setfam {"p": 5, "size_mod": [2, 3, 4], "int_mod": [1], "size_abs": null, "int_abs": null, "int_min": null}
+  f = {3: 3, 4: 4, 5: 5, 6: 5, 7: 7, 8: 8}  surprise mean=0.21 bits max=0.74 bits
+  weave[1/probe] incidence_matrix+gram_rank: g = 'n+1' -> consistent WIN tight_at=[]
+  weave[2/probe] incidence_matrix+gram_rank: g = 'n + 1' -> consistent WIN tight_at=[]
+  weave[3/wide3] slice_rank+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 1)' -> consistent WIN tight_at=[]
+problem 3cbf8ec9d686 (variant): setfam {"p": 5, "size_mod": [1, 2, 3, 4], "int_mod": [1], "size_abs": null, "int_abs": null, "int_min": null}
+  f = {3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8}  surprise mean=0.32 bits max=0.69 bits
+  weave[1/probe] incidence_matrix+gram_rank: g = 'n + 3' -> consistent WIN tight_at=[]
+  weave[2/probe] incidence_matrix+gram_rank: g = 'n + 3' -> consistent WIN tight_at=[]
+  weave[3/wide3] double_counting+diagonal_criterion+multilinear_dim+self_orthogonal: g = 'min(2**n, n + 1 + 5**(n//2))' -> consistent tight_at=[]
+problem 5028b6a524fc (variant): setfam {"p": 5, "size_mod": [1, 2, 3, 4], "int_mod": [1, 2], "size_abs": null, "int_abs": null, "int_min": null}
+  f = {3: 4, 4: 7, 5: 11, 6: 16, 7: 22, 8: 29}  surprise mean=1.27 bits max=2.0 bits
+  weave[1/probe] incidence_matrix+dim_independent+multilinear_dim: g = '2**n - 1' -> consistent tight_at=[]
+  weave[2/probe] double_counting+pigeonhole: g = '2**n - 1' -> consistent tight_at=[]
+  weave[3/wide3] fourier_indicator+pigeonhole: g = '2**n - 1' -> consistent tight_at=[]
+  weave[3/wide3] slice_rank+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 4)' -> consistent WIN tight_at=[]
+problem 7ef949417b53 (variant): setfam {"p": 5, "size_mod": [2, 3], "int_mod": null, "size_abs": null, "int_abs": [1, 2], "int_min": null}
+  f = {3: 4, 4: 7, 5: 10, 6: 15, 7: 21, 8: 29}  surprise mean=0.09 bits max=0.15 bits
+  weave[1/probe] incidence_matrix+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[]
+  weave[2/probe] incidence_matrix+diagonal_criterion+multilinear_dim: g = '2*binom_sum(n,2)' -> consistent WIN tight_at=[]
+  weave[3/wide3] slice_rank+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[]
+  weave[3/wide3] double_counting+pigeonhole: g = 'comb(n,2)+comb(n,3)+comb(n,7)+comb(n,8)' -> consistent tight_at=[3]
+problem 35a8f159d25e (variant): setfam {"p": 5, "size_mod": [2, 3], "int_mod": null, "size_abs": null, "int_abs": [1, 2, 3], "int_min": null}
+  f = {3: 4, 4: 7, 5: 10, 6: 15, 7: 22, 8: 29}  surprise mean=0.27 bits max=0.47 bits
