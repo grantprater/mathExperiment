@@ -49,6 +49,19 @@ class Family(ABC):
     def default_ns(self, spec: dict) -> list[int]:
         """Default list of n values for this spec."""
 
+    # ---- extremal witnesses (run 3) ---------------------------------------
+    def truth_witness(self, spec: dict, n: int, time_limit: float | None) -> tuple[int | None, list | None]:
+        """(f(n), an object achieving it), or (None, None) on timeout."""
+        return self.truth(spec, n, time_limit), None
+
+    def check_witness(self, spec: dict, n: int, witness: list) -> list[str]:
+        """Errors if ``witness`` does not satisfy the problem at ``n``."""
+        raise NotImplementedError
+
+    def witness_text(self, spec: dict, n: int, witness: list) -> str:
+        """The witness in plain words, for the explain prompt."""
+        raise NotImplementedError
+
     # ---- shared ---------------------------------------------------------
     def normalize(self, spec: dict) -> dict:
         """Copy with every field present and list values sorted; used to diff specs."""

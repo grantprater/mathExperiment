@@ -117,8 +117,11 @@ def _solutions(eq, amb: Ambient) -> list[frozenset]:
 
 
 def max_free_set(N: int, edges: list[frozenset], time_limit: float | None,
-                 force_first: bool = False) -> int:
-    """Largest subset of range(N) containing no edge. Raises _Timeout."""
+                 force_first: bool = False, return_set: bool = False):
+    """Largest subset of range(N) containing no edge. Raises _Timeout.
+
+    Returns its size, or ``(size, members)`` with the argmax as a sorted index list
+    when ``return_set`` is true."""
     deadline = None if time_limit is None else time.monotonic() + time_limit
     forbidden0 = 0
     by_elem: list[list[int]] = [[] for _ in range(N)]
@@ -134,10 +137,11 @@ def max_free_set(N: int, edges: list[frozenset], time_limit: float | None,
     # rem[i] = bits i..N-1
     full = (1 << N) - 1
     best = 0
+    best_set = 0
     nodes = 0
 
     def rec(chosen: int, cnt: int, forb: int, start: int) -> None:
-        nonlocal best, nodes
+        nonlocal best, best_set, nodes
         nodes += 1
         if deadline is not None and (nodes & 1023) == 0 and time.monotonic() > deadline:
             raise _Timeout()
@@ -145,7 +149,8 @@ def max_free_set(N: int, edges: list[frozenset], time_limit: float | None,
         if cnt + avail.bit_count() <= best:
             return
         if not avail:
-            best = max(best, cnt)
+            if cnt > best:
+                best, best_set = cnt, chosen
             return
         low = avail & -avail
         e = low.bit_length() - 1
@@ -171,10 +176,12 @@ def max_free_set(N: int, edges: list[frozenset], time_limit: float | None,
             rest = h & ~1
             if rest & (rest - 1) == 0:
                 f2 |= rest
-        best = 1
+        best, best_set = 1, 1
         rec(1, 1, f2, 1)
     else:
         rec(0, 0, forbidden0, 0)
+    if return_set:
+        return best, [i for i in range(N) if best_set >> i & 1]
     return best
 
 
@@ -301,17 +308,53 @@ class AddFree(Family):
         return f"{amb} such that {cond}. Let f(n) be the largest possible |A|."
 
     def truth(self, spec: dict, n: int, time_limit: float | None) -> int | None:
+        return self.truth_witness(spec, n, time_limit)[0]
+
+    @staticmethod
+    def _equations_of(spec: dict) -> list:
+        return [spec["equation"]] + ([spec["equation2"]] if spec.get("equation2") is not None else [])
+
+    @staticmethod
+    def _element(amb: Ambient, i: int):
+        """Element index -> its value as shown to the model (F_p^k: a digit vector,
+        coordinate 1 first)."""
+        return amb._digits(i) if amb.group == "fpk" else amb.values[i]
+
+    def truth_witness(self, spec: dict, n: int, time_limit: float | None) -> tuple[int | None, list | None]:
+        """(f(n), an extremal set A as a sorted list of its elements), or (None, None)
+        on timeout. Elements are integers (int: 1..n; cyclic: 0..n-1) or digit vectors."""
         amb = Ambient(spec["group"], n, spec.get("p"))
         t0 = time.monotonic()
-        eqs = [spec["equation"]] + ([spec["equation2"]] if spec.get("equation2") is not None else [])
+        eqs = self._equations_of(spec)
         edges = list({e for eq in eqs for e in _solutions(eq, amb)})
         left = None if time_limit is None else max(0.0, time_limit - (time.monotonic() - t0))
         # In a group, WLOG 0 is in the set when every equation is translation invariant.
         invariant = spec["group"] != "int" and all(_invariant(eq) for eq in eqs)
         try:
-            return max_free_set(amb.N, edges, left, force_first=invariant)
+            size, members = max_free_set(amb.N, edges, left, force_first=invariant, return_set=True)
         except _Timeout:
-            return None
+            return None, None
+        return size, [self._element(amb, i) for i in members]
+
+    def check_witness(self, spec: dict, n: int, witness: list) -> list[str]:
+        """Errors if ``witness`` is not a solution-free set for ``spec`` at ``n``."""
+        amb = Ambient(spec["group"], n, spec.get("p"))
+        index = {json.dumps(self._element(amb, i)): i for i in range(amb.N)}
+        idx = set()
+        for x in witness:
+            if json.dumps(x) not in index:
+                return [f"element {x!r} is not in the ambient set"]
+            idx.add(index[json.dumps(x)])
+        errs = [] if len(idx) == len(witness) else ["repeated element"]
+        for e in {e for eq in self._equations_of(spec) for e in _solutions(eq, amb)}:
+            if e <= idx:
+                errs.append(f"contains the solution {sorted(map(str, (self._element(amb, i) for i in e)))}")
+        return errs
+
+    def witness_text(self, spec: dict, n: int, witness: list) -> str:
+        fmt = (lambda v: "(" + ", ".join(map(str, v)) + ")") if spec["group"] == "fpk" else str
+        return (f"an extremal set A at n = {n} ({len(witness)} elements): {{"
+                + ", ".join(fmt(x) for x in witness) + "}")
 
     def trivial_bound(self, spec: dict, n: int) -> int:
         return spec["p"] ** n if spec["group"] == "fpk" else n

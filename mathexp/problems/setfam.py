@@ -136,6 +136,11 @@ class SetFamily(Family):
         return True
 
     def truth(self, spec: dict, n: int, time_limit: float | None) -> int | None:
+        return self.truth_witness(spec, n, time_limit)[0]
+
+    def truth_witness(self, spec: dict, n: int, time_limit: float | None) -> tuple[int | None, list | None]:
+        """(f(n), an extremal family as sorted lists of elements of [n] = {1..n}), or
+        (None, None) on timeout. The family is the maximum clique's vertex set."""
         verts = [m for m in range(1 << n) if self._size_ok(spec, m.bit_count())]
         int_ok = [self._int_ok(spec, t) for t in range(n + 1)]
         adj = [0] * len(verts)
@@ -146,10 +151,33 @@ class SetFamily(Family):
                     row |= 1 << j
             adj[i] = row
         try:
-            size, _ = max_clique(adj, time_limit)
+            size, clique = max_clique(adj, time_limit)
         except Timeout:
-            return None
-        return size
+            return None, None
+        fam = sorted((sorted(i + 1 for i in range(n) if verts[v] >> i & 1) for v in clique),
+                     key=lambda a: (len(a), a))
+        return size, fam
+
+    def check_witness(self, spec: dict, n: int, witness: list) -> list[str]:
+        """Errors if ``witness`` is not a valid family for ``spec`` at ``n``."""
+        errs = []
+        sets = [frozenset(a) for a in witness]
+        if len(set(sets)) != len(sets):
+            errs.append("repeated member")
+        for a in sets:
+            if not a <= set(range(1, n + 1)):
+                errs.append(f"member {sorted(a)} not inside [n]")
+            if not self._size_ok(spec, len(a)):
+                errs.append(f"member {sorted(a)} fails the size condition")
+        for i, a in enumerate(sets):
+            for b in sets[i + 1:]:
+                if not self._int_ok(spec, len(a & b)):
+                    errs.append(f"members {sorted(a)}, {sorted(b)} meet in {len(a & b)}")
+        return errs
+
+    def witness_text(self, spec: dict, n: int, witness: list) -> str:
+        sets = ["{" + ", ".join(map(str, a)) + "}" for a in witness]
+        return f"an extremal family F at n = {n} ({len(witness)} members): " + ", ".join(sets)
 
     def trivial_bound(self, spec: dict, n: int) -> int:
         return sum(math.comb(n, s) for s in range(n + 1) if self._size_ok(spec, s))
