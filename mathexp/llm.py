@@ -30,6 +30,22 @@ class LLMError(RuntimeError):
     pass
 
 
+def answering_model(model_usage: dict | None, requested: str | None = None) -> str | None:
+    """The model that wrote the answer, from ``claude -p``'s ``modelUsage``.
+
+    ``modelUsage`` can hold more than one model: run 3's CLI listed a small auxiliary
+    Haiku call (about 17 output tokens) first and Sonnet, which wrote the answer
+    (about 2,000), second, so taking the first key mislabelled every row. The answer
+    comes from the requested model if it is present; otherwise from the model with the
+    most output tokens (an alias such as "sonnet" never matches a key)."""
+    mu = model_usage or {}
+    if not mu:
+        return None
+    if requested and requested in mu:
+        return requested
+    return max(mu, key=lambda k: ((mu[k] or {}).get("outputTokens") or 0, k))
+
+
 class Backend:
     name = "base"
     model = ""
@@ -90,7 +106,7 @@ class ClaudeBackend(Backend):
         usage = outer.get("usage") or {}
         mu = outer.get("modelUsage") or {}
         meta.update({
-            "model": next(iter(mu), None),
+            "model": answering_model(mu, self.model),
             "model_usage": mu,
             "input_tokens": usage.get("input_tokens"),
             "cache_creation_input_tokens": usage.get("cache_creation_input_tokens"),

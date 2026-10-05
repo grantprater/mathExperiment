@@ -535,3 +535,28 @@ def test_store_reads_past_a_truncated_last_line(tmp_path):
     with st.path("calls").open("a", encoding="utf-8") as fh:
         fh.write('{"a": 2, "b": ')  # killed mid-append
     assert st.rows("calls") == [{"a": 1}]
+
+
+def test_answering_model_is_not_the_first_model_usage_key():
+    """Run 3's call rows said Haiku: ``claude -p`` listed an auxiliary Haiku call
+    (17 output tokens) before Sonnet (2270), and the first key was taken."""
+    from mathexp.llm import answering_model
+
+    mu = {"claude-haiku-4-5-20251001": {"outputTokens": 17},
+          "claude-sonnet-5-5": {"outputTokens": 2270}}
+    assert answering_model(mu, "claude-sonnet-5-5") == "claude-sonnet-5-5"
+    assert answering_model(mu, "sonnet") == "claude-sonnet-5-5"  # an alias: most output tokens
+    assert answering_model(mu, None) == "claude-sonnet-5-5"
+    # the requested model wins when present, even with fewer output tokens
+    assert answering_model(mu, "claude-haiku-4-5-20251001") == "claude-haiku-4-5-20251001"
+    assert answering_model({}, "claude-sonnet-5-5") is None
+    assert answering_model(None) is None
+
+    # the reports derive it from meta.model_usage for stored rows and show a differing label
+    row = {"model": "claude-haiku-4-5-20251001", "requested_model": "claude-sonnet-5-5",
+           "meta": {"model_usage": mu}}
+    assert report3.call_model(row) == "claude-sonnet-5-5"
+    assert report3.call_model({"model": "mock-1", "meta": {}}) == "mock-1"
+    line = report3.models_line([row, row])
+    assert line.startswith("answering model (from model_usage): claude-sonnet-5-5 x2")
+    assert "stored label differs on claude-haiku-4-5-20251001 x2" in line

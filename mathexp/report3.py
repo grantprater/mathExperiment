@@ -14,6 +14,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 from . import REPO, method
+from .llm import answering_model
 from .calibration import _fisher
 from .report import sign_test, spearman
 from .store import Store
@@ -143,6 +144,23 @@ def _ci(iv):
     return "--" if iv is None else f"[{iv[0]:.3f}, {iv[1]:.3f}]"
 
 
+def call_model(c: dict) -> str | None:
+    """The model that answered a stored call: derived from ``meta.model_usage`` (the
+    stored ``model`` label took the first key, an auxiliary Haiku call, on every run 3
+    row), falling back to the label when no usage was recorded."""
+    mu = (c.get("meta") or {}).get("model_usage")
+    return answering_model(mu, c.get("requested_model")) if mu else c.get("model")
+
+
+def models_line(calls: list[dict]) -> str:
+    line = "answering model (from model_usage): " + (
+        ", ".join(f"{k} x{v}" for k, v in Counter(call_model(c) for c in calls).items()) or "--")
+    off = Counter(c.get("model") for c in calls if c.get("model") != call_model(c))
+    if off:
+        line += "; stored label differs on " + ", ".join(f"{k} x{v}" for k, v in off.items())
+    return line
+
+
 def _done(store: Store) -> list[dict]:
     """The last 'done' row per (run, problem)."""
     last = {}
@@ -267,8 +285,7 @@ def a4b_report(store: Store, seed: int = 0, run2_stores=RUN2_A4_STORES) -> str:
     comp, prim = pops["completed"], pops["primary"]
     out = [f"store {store.dir}", f"A4b: {len(pops['all'])} problems processed, {len(comp)} completed, "
            f"{len(calls)} calls ({sum(1 for c in calls if c.get('parse_ok'))} parsed)",
-           "models returned: " + (", ".join(f"{k} x{v}" for k, v in
-                                           Counter(c.get("model") for c in calls).items()) or "--"), ""]
+           models_line(calls), ""]
 
     out.append("== A4b: primary population ==")
     out.append(f"  completed {len(comp)}: P empty (bridge chosen by the method call) {len(pops['p_from_method'])}, "
@@ -524,8 +541,7 @@ def a5b_report(store: Store) -> str:
     calls = store.rows("calls")
     out = [f"store {store.dir}", f"A5b: {len(done)} problem rows, {len(calls)} calls "
            f"({sum(1 for c in calls if c.get('parse_ok'))} parsed)",
-           "models returned: " + (", ".join(f"{k} x{v}" for k, v in
-                                           Counter(c.get("model") for c in calls).items()) or "--"), ""]
+           models_line(calls), ""]
     bits: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
     info: dict[str, dict] = {}
     for p in done:
