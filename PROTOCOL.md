@@ -150,6 +150,59 @@ number of LLM calls.
   P(non-prior win | unsurprising) an unbiased comparison. The adaptive arm then tests
   whether acting on the principle saves calls.
 
+## Run 2: surprise per unit of description (fixed before run 2's data)
+
+Run 1 found no surprising problems: at n ≤ 7, Sonnet recalled or worked out every answer
+(RESULTS.md). Run 2 looks for problems that are short to state but whose answers resist
+short description. The owner's target is "maximum surprise for minimum entropy", and the
+principle behind it is interestingness = compression progress (Schmidhuber).
+
+- **Statement length L(spec)** is the number of atoms in the canonical spec, excluding
+  `ns`. Each condition name counts 1, and each number in it counts 1. Example: Oddtown
+  `p=2, size_mod=[1], int_mod=[0]` has 6 atoms. A statement may combine two simple
+  conditions. In family B that means an optional second equation.
+- **Golf length G(seq)** is the node count of the shortest expression in the golf grammar
+  that reproduces a sequence exactly.
+  - The grammar: terminals `n, 1, 2, 3`; binary `+ - * // % **`, `comb`, `binom_sum`,
+    `min`, `max`; unary `isqrt`, `ilog2`.
+  - The search is bottom-up enumeration up to a size cap, merging expressions with equal
+    value vectors.
+  - A sequence with no expression under the cap gets G = cap + 1.
+- **Golf jump** J = G(f at every computed n) − G(f at every n but the largest). In
+  words: how much longer the shortest description gets when the last value arrives.
+- **Scan score** = J / L. Every spec up to a length cap is enumerated, brute-forced and
+  golfed.
+  - A spec with fewer than 4 computed values is refused.
+  - Specs with identical f sequences keep only the shortest statement.
+  - The top K, with a per-family quota, become run 2's problems.
+- **Model surprise in bits.** For each n, the model gives a distribution over f(n): up to
+  5 candidate values with probabilities, plus residual mass. Any value it did not list
+  gets an equal share of the residual over the remaining values in [0, trivial(n)].
+  - Surprise at n = −log2 P(f(n)), capped at 30 bits.
+  - A problem's surprise is the mean over n; its surprise_max is the max over n.
+  - A top-1 claim "f(n) = top candidate" at confidence P(top) is scored as a binary row,
+    so it fits the reticle-style gap and Brier calibration.
+- **Surprising** (replacing run 1's trigger): some n has surprise ≥ 4 bits, meaning the
+  true value had probability at most 1/16. This is a constant in code.
+
+**Arms for run 2:**
+- **A5, notes and compression progress.** Both conditions take the same top-K list in the
+  same seeded random order, with prediction only (no weave, no mutation). One condition
+  shows notes in the predict prompt: the statements and true sequences of the problems
+  already processed in the same family, most recent first, up to a fixed cap. The other
+  shows none.
+  - Primary measure: the paired difference in bits per problem, notes minus no-notes.
+  - Secondary measure: bits as a function of position in the order.
+  - Compression progress means the notes arm's bits fall faster.
+- **A4 again**, with the bits trigger. The seeds are the top-scanned problems, and every
+  mutation must be checkable (at least 4 computed values) or it is refused.
+- **Side result.** Does cheap surprise predict model surprise? Report the Spearman
+  correlation between scan score (and J) and the model's mean bits, using the no-notes
+  arm of A5.
+
+**Headline metrics for weaves from run 2 on:** bounds tight at the largest computed n,
+and g(n_max) / trivial(n_max). The "win" count stays as a secondary column.
+
 ## Known limits
 
 - Consistency at small n is weak evidence for an asymptotic bound, and the proof sketches
