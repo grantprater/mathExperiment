@@ -502,3 +502,18 @@ problem 333d75b11921 (variant): setfam {"p": 5, "size_mod": [2], "int_mod": [0, 
 problem c2dc838992eb (variant): setfam {"p": 3, "size_mod": [1, 2], "int_mod": [1, 2]}
   f = {3: 3, 4: 5, 5: 7, 6: 11, 7: 13, 8: 17}  surprise mean=1.98 bits max=3.32 bits
   weave[1/probe] incidence_matrix+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, n)' -> consistent tight_at=[]
+  weave[2/probe] incidence_matrix+gram_rank+multilinear_dim+dim_independent: g = 'binom_sum(n, 3)' -> consistent WIN tight_at=[]
+  weave[3/wide3] translates+disjoint_translates: g = '2**(n-1)' -> consistent WIN tight_at=[]
+problem 40a52c7e4c4d (variant): setfam {"p": 5, "size_mod": [1, 2], "int_mod": [0], "int_min": 5}
+  f = {3: 1, 4: 1, 5: 1, 6: 1, 7: 7, 8: 7}  surprise mean=0.06 bits max=0.1 bits
+  weave[1/probe] charvec_fp+gram_rank: g = 'n' -> consistent WIN tight_at=[7]
+  weave[2/probe] charvec_fp+gram_rank: g = 'n' -> consistent WIN tight_at=[7]
+  weave[3/wide3] graph_spectrum+diagonal_criterion+dim_independent: g = 'n' -> consistent WIN tight_at=[7]
+problem 701636b63f8f (variant): setfam {"p": 5, "size_mod": [0, 1], "int_abs": [2, 3]}
+  f = {3: 1, 4: 1, 5: 1, 6: 1, 7: 3, 8: 8}  surprise mean=0.07 bits max=0.1 bits
+  weave[1/probe] graph_spectrum+multilinear_dim+diagonal_criterion+dim_independent: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[]
+  weave[2/probe] double_counting+cauchy_schwarz+multilinear_dim: g = 'binom_sum(n, 4)' -> consistent tight_at=[]
+  weave[3/wide3] multilinear_poly+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[]
+run a4b: 80 problems (80 completed), 480 calls, store runs/run3-a4b/a4b
+A4b done: {'run': 'a4b', 'problems': 80, 'completed': 80, 'calls': 480}
+run 3 (a4b) finished -> runs/run3-a4b

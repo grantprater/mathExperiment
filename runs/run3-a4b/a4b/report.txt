@@ -1,0 +1,234 @@
+store runs/run3-a4b/a4b  (all runs)
+80 problems processed, 285 weaves, 480 calls (480 parsed)
+
+== Calibration (domain x kind x level x model) ==
+domain   kind             level     model                   n  scr   acc  conf    gap  brier  cov80  medlog2   bits  runs z  chg p
+addfree  bound_holds      mechanism claude-haiku-4-5-202   68   65  1.00  0.95  +0.05  0.005     --       --     --      --   1.00
+addfree  distribution     value     claude-haiku-4-5-202  539  539  0.76  0.93  -0.17  0.184     --       --   3.21  -14.75   0.00
+addfree  method_band      mechanism claude-haiku-4-5-202   20   20  1.00  1.00  +0.00  0.000     --       --   1.51      --   1.00
+addfree  method_band_top  mechanism claude-haiku-4-5-202   20   20  0.70  0.43  +0.27  0.278     --       --     --   -0.22   1.00
+addfree  recognition      ontology  claude-haiku-4-5-202    1    0    --    --     --     --     --       --     --      --     --
+addfree  top1             value     claude-haiku-4-5-202  539  539  0.44  0.46  -0.02  0.171     --       --     --  -13.18   0.00
+setfam   bound_holds      mechanism claude-haiku-4-5-202  217  215  1.00  0.95  +0.05  0.004     --       --     --      --   1.00
+setfam   distribution     value     claude-haiku-4-5-202  360  360  0.99  0.94  +0.05  0.009     --       --   0.27  -13.79   1.00
+setfam   method_band      mechanism claude-haiku-4-5-202   60   60  1.00  1.00  +0.00  0.000     --       --   1.40      --   1.00
+setfam   method_band_top  mechanism claude-haiku-4-5-202   60   60  0.60  0.51  +0.09  0.177     --       --     --   +0.33   1.00
+setfam   mutation_effect  mechanism claude-haiku-4-5-202  125   41  0.80  0.84  -0.04  0.162     --       --     --   -0.45   0.50
+setfam   recognition      ontology  claude-haiku-4-5-202   15    0    --    --     --     --     --       --     --      --     --
+setfam   top1             value     claude-haiku-4-5-202  360  360  0.97  0.90  +0.07  0.024     --       --     --   -9.35   1.00
+
+== Top surprises (mean bits, -log2 P(f) (run 2)) ==
+  7.03 (max 30.00) 306bbb336c3f scan     f={'4': 1, '5': 1, '6': 2, '7': 2, '8': 2, '9': 2, '10': 2, '11': 2, '12': 2, '13': 2, '14': 3, '15': 3, '16': 3, '17': 3, '18': 3, '19': 3, '20': 3, '21': 4, '22': 4, '23': 4, '24': 4, '25': 4, '26': 4, '27': 4, '28': 4, '29': 4, '30': 4}
+  5.92 (max 30.00) 65ca06540480 scan     f={'4': 1, '5': 2, '6': 2, '7': 2, '8': 2, '9': 2, '10': 2, '11': 2, '12': 3, '13': 3, '14': 3, '15': 3, '16': 3, '17': 3, '18': 3, '19': 4, '20': 4, '21': 4, '22': 4, '23': 4, '24': 4, '25': 4, '26': 5, '27': 4, '28': 5, '29': 5, '30': 5}
+  5.34 (max 8.08) b84668247195 scan     f={'4': 1, '5': 1, '6': 1, '7': 2, '8': 2, '9': 2, '10': 2, '11': 2, '12': 3, '13': 3, '14': 3, '15': 3, '16': 3, '17': 3, '18': 3, '19': 3, '20': 3, '21': 3, '22': 3, '23': 3, '24': 3, '25': 4, '26': 4, '27': 4, '28': 5, '29': 5, '30': 4}
+  5.33 (max 7.02) 1f9a2d314d09 scan     f={'4': 2, '5': 2, '6': 2, '7': 2, '8': 2, '9': 2, '10': 2, '11': 2, '12': 3, '13': 3, '14': 3, '15': 3, '16': 4, '17': 4, '18': 4, '19': 4, '20': 4, '21': 4, '22': 4, '23': 4, '24': 5, '25': 5, '26': 5, '27': 5, '28': 5, '29': 5, '30': 5}
+  4.93 (max 7.44) 05534495f261 scan     f={'4': 3, '5': 3, '6': 3, '7': 3, '8': 4, '9': 4, '10': 5, '11': 5, '12': 5, '13': 5, '14': 6, '15': 6, '16': 7, '17': 7, '18': 7, '19': 7, '20': 7, '21': 8, '22': 8, '23': 8, '24': 8, '25': 9, '26': 9, '27': 9, '28': 9, '29': 9, '30': 9}
+  4.40 (max 8.26) ecd17abc4fee variant  f={'3': 4, '4': 7, '5': 11, '6': 15, '7': 21, '8': 29}
+  4.10 (max 7.78) c9ea9b438743 scan     f={'4': 1, '5': 1, '6': 2, '7': 2, '8': 2, '9': 2, '10': 2, '11': 3, '12': 3, '13': 3, '14': 3, '15': 3, '16': 3, '17': 3, '18': 3, '19': 3, '20': 3, '21': 3, '22': 4, '23': 4, '24': 4, '25': 4, '26': 4, '27': 4, '28': 5, '29': 5, '30': 5}
+  4.02 (max 8.97) 38187748b625 scan     f={'4': 1, '5': 1, '6': 2, '7': 2, '8': 2, '9': 2, '10': 2, '11': 2, '12': 4, '13': 2, '14': 4, '15': 4, '16': 4, '17': 3, '18': 6, '19': 3, '20': 5, '21': 6, '22': 4, '23': 4, '24': 8, '25': 5, '26': 5, '27': 6, '28': 8, '29': 5, '30': 10}
+
+== Weave headline: tight at n_max, median g/trivial (then wins) ==
+  variant  bounds=144  consistent=142  tight_at_n_max=10   median g/trivial=0.646  wins=78
+  scan     bounds=141  consistent=138  tight_at_n_max=7    median g/trivial=0.500  wins=117
+
+== Weave status counts ==
+  named    n=0    consistent=0 violated=0 insufficient=0 error=0  wins=0  with_tight=0
+  variant  n=144  consistent=142 violated=0 insufficient=0 error=2  wins=78  with_tight=41
+  scan     n=141  consistent=138 violated=0 insufficient=0 error=3  wins=117  with_tight=43
+
+== Reuse / importance of (bridge, lemma) pairs (wins only) ==
+  double_counting      pigeonhole                 families=2 problems=20 (named 0, variant 7, scan 20) best g/trivial=0.035
+  translates           disjoint_translates        families=2 problems=9 (named 0, variant 2, scan 9) best g/trivial=0.500
+  charvec_fp           dim_independent            families=2 problems=7 (named 0, variant 1, scan 6) best g/trivial=0.094
+  double_counting      cauchy_schwarz             families=2 problems=6 (named 0, variant 4, scan 4) best g/trivial=0.053
+  graph_spectrum       pigeonhole                 families=2 problems=6 (named 0, variant 0, scan 6) best g/trivial=0.500
+  orbit_averaging      pigeonhole                 families=2 problems=3 (named 0, variant 1, scan 2) best g/trivial=0.035
+  multilinear_poly     diagonal_criterion         families=1 problems=18 (named 0, variant 10, scan 12) best g/trivial=0.106
+  multilinear_poly     multilinear_dim            families=1 problems=18 (named 0, variant 10, scan 12) best g/trivial=0.106
+  incidence_matrix     gram_rank                  families=1 problems=13 (named 0, variant 7, scan 8) best g/trivial=0.055
+  charvec_fp           gram_rank                  families=1 problems=10 (named 0, variant 10, scan 4) best g/trivial=0.093
+  graph_spectrum       diagonal_criterion         families=1 problems=8 (named 0, variant 6, scan 3) best g/trivial=0.111
+  graph_spectrum       multilinear_dim            families=1 problems=7 (named 0, variant 5, scan 3) best g/trivial=0.250
+  translates           pigeonhole                 families=1 problems=7 (named 0, variant 0, scan 10) best g/trivial=0.167
+  incidence_matrix     multilinear_dim            families=1 problems=6 (named 0, variant 10, scan 0) best g/trivial=0.398
+  slice_rank           diagonal_criterion         families=1 problems=6 (named 0, variant 5, scan 1) best g/trivial=0.055
+
+== A4: assume the prior, widen on surprise (trigger: 4 bits; run 1: |log2| >= 1) ==
+  full      wins per 100 calls: 40.6  (195 wins / 480 calls, 1 runs)
+  adaptive, unsurprising (narrow): prior held 0/0  (escalated 0)
+  fixed breadth: problems with a win from a bridge outside the prior
+    surprising    0/0
+    unsurprising  0/0
+
+== A5: notes and compression progress (predict-only; bits per problem) ==
+  (no predict-only problems)
+
+== Side result: does cheap surprise predict model surprise? (A5 no-notes arm) ==
+  (no scan problems in a no-notes predict-only run)
+
+== What-if tree ==
+  - e16149c360b2  f={'3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 14} surprise=0.11 mode=full
+    - b1961534c4ed Allow pairwise intersections of size 1 as well as 0 and 2. f={'3': 3, '4': 5, '5': 6, '6': 9, '7': 14, '8': 22} surprise=0.07 mode=full
+      - c9ecf0ae146b Allow pairwise intersections of size up to 3 instead of up to 2. (not processed)
+      - fbfc0bd13854 Require sizes ≡ 0 mod 3 (sizes 3 and 6) instead of ≡ 1, keeping inters (not processed)
+    - 3ec967460443 Allow member sizes congruent to 1 or 2 mod 3, instead of only 1 mod 3. f={'3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 14} surprise=0.38 mode=full
+      - e63d1063542e Pairwise intersections of size 1 are also allowed, so the condition be (not processed)
+      - 8a4ba7cb15ac Every pair of distinct members must intersect in exactly 2 elements, w f={'3': 1, '4': 2, '5': 2, '6': 3, '7': 7, '8': 7} surprise=0.16 mode=full
+    - 9c846818dc5a Require every pair to intersect in exactly 2 elements, so disjoint pai (not processed)
+  - 1f9a2d314d09  f={'4': 2, '5': 2, '6': 2, '7': 2, '8': 2, '9': 2, '10': 2, '11': 2, '12': 3, '13': 3, '14': 3, '15': 3, '16': 4, '17': 4, '18': 4, '19': 4, '20': 4, '21': 4, '22': 4, '23': 4, '24': 5, '25': 5, '26': 5, '27': 5, '28': 5, '29': 5, '30': 5} surprise=5.33 mode=full
+  - fa9a20154a92  f={'3': 1, '4': 1, '5': 1, '6': 2, '7': 2, '8': 4} surprise=0.05 mode=full
+    - b7871da5b1ea Also allow pairwise intersections of size ≡ 0 mod 5, so disjoint singl (not processed)
+    - feaf77c662d2 Allow member sizes ≡ 1 or 2 mod 5, so sizes 1, 2, 6 and 7 are all perm (not processed)
+    - 69bf3fb2e494 Require pairwise intersections ≡ 1 mod 5 only, which removes the size- (not processed)
+  - 45d701038009  f={'4': 2, '5': 3, '6': 3, '7': 3, '8': 4, '9': 4, '10': 4, '11': 4, '12': 4, '13': 5, '14': 5, '15': 5, '16': 5, '17': 5, '18': 5, '19': 5, '20': 5, '21': 6, '22': 6, '23': 6, '24': 6, '25': 6, '26': 6, '27': 6, '28': 6, '29': 7} surprise=0.65 mode=full
+  - 7a3ac310974d  f={'4': 2, '5': 2, '6': 2, '7': 2, '8': 3, '9': 3, '10': 4, '11': 3, '12': 4, '13': 4, '14': 4, '15': 4, '16': 5, '17': 4, '18': 6, '19': 4, '20': 5, '21': 5, '22': 6, '23': 5, '24': 6, '25': 5, '26': 8, '27': 6, '28': 7, '29': 6, '30': 8} surprise=3.10 mode=full
+  - 4299207e3f24  f={'4': 1, '5': 2, '6': 2, '7': 2, '8': 2, '9': 3, '10': 3, '11': 3, '12': 3, '13': 4, '14': 4, '15': 4, '16': 4, '17': 4, '18': 4, '19': 4, '20': 5, '21': 5, '22': 5, '23': 4, '24': 5, '25': 5, '26': 5, '27': 5, '28': 5, '29': 5, '30': 6} surprise=2.99 mode=full
+  - 38187748b625  f={'4': 1, '5': 1, '6': 2, '7': 2, '8': 2, '9': 2, '10': 2, '11': 2, '12': 4, '13': 2, '14': 4, '15': 4, '16': 4, '17': 3, '18': 6, '19': 3, '20': 5, '21': 6, '22': 4, '23': 4, '24': 8, '25': 5, '26': 5, '27': 6, '28': 8, '29': 5, '30': 10} surprise=4.02 mode=full
+  - f5e002c40acf  f={'3': 1, '4': 1, '5': 1, '6': 1, '7': 1, '8': 8} surprise=0.05 mode=full
+    - 9c389ee89155 Drop the minimum intersection requirement, so 2-sets pairwise sharing  f={'3': 3, '4': 3, '5': 4, '6': 5, '7': 6, '8': 8} surprise=0.05 mode=full
+      - 6a69776e4686 Require pairwise intersections to be 0 mod 5 instead of 1 mod 5. (not processed)
+    - 0ab97073adf5 Allow intersection sizes ≡2 mod 5 as well, so a 2-set may sit inside 7 (not processed)
+    - 0884a6e2f375 Allow sizes ≡3 mod 5 as well, which adds 3-sets and 8-sets. (not processed)
+  - ece50aee9106  f={'3': 1, '4': 2, '5': 2, '6': 3, '7': 8, '8': 8} surprise=0.22 mode=full
+    - 6c40d7a4c8bd Also allow pairwise intersections of size ≡ 3 mod 5. (not processed)
+    - 832e20f3f016 Restrict member sizes to ≡ 2 mod 5 only, so sizes are 2 or 7 for n ≤ 8 f={'3': 1, '4': 1, '5': 1, '6': 1, '7': 2, '8': 2} surprise=0.05 mode=full
+      - a2529a6ec461 Also allow pairwise intersections of size 1 mod 5, so that 2-sets shar f={'3': 3, '4': 3, '5': 4, '6': 5, '7': 7, '8': 15} surprise=0.06 mode=full
+        - 6b8a3c81b77e Also allow pairwise intersections of size ≡ 0 (mod 5), so disjoint set (not processed)
+        - a0ace849e1de Require set sizes ≡ 3 (mod 5) instead of 2, so sizes are 3 or 8 when n (not processed)
+        - de3d5a748128 Drop residue 4 from the allowed intersections, leaving only 1 or 2 (mo f={'3': 3, '4': 3, '5': 4, '6': 5, '7': 7, '8': 15} surprise=0.05 mode=full
+          - 333d75b11921 Intersections ≡ 0 mod 5 are also allowed, which includes the empty int f={'3': 3, '4': 6, '5': 10, '6': 15, '7': 22, '8': 36} surprise=0.02 mode=full
+            - 5ba72f7e2d8b Forbid intersection size 2 mod 5, so only intersections of 0 or 1 mod  (not processed)
+            - 8a4b468dadb9 Allow sizes 2 or 3 mod 5, so sizes 2, 3, 7 and 8 are all permitted. (not processed)
+            - 180715d081e7 Also allow intersection size 3 mod 5, so only 4 mod 5 is forbidden. (not processed)
+          - cc8e4d5d102f Sizes ≡ 3 mod 5 are also allowed, so sets of size 3 and 8 can be membe f={'3': 4, '4': 7, '5': 10, '6': 15, '7': 21, '8': 29} surprise=0.60 mode=full
+            - 6052a5b34fba Allow pairwise intersection sizes congruent to 1, 2 or 3 mod 5, which  f={'3': 4, '4': 7, '5': 10, '6': 15, '7': 22, '8': 37} surprise=0.28 mode=full
+              - 6ff7266da4aa Allow intersection sizes congruent to 4 mod 5 as well, relaxing the in f={'3': 4, '4': 7, '5': 10, '6': 15, '7': 22, '8': 37} surprise=0.13 mode=full
+                - 3336965a11db Also allow set sizes congruent to 4 mod 5, which relaxes the size cond (not processed)
+                - 6d0ed04c01c7 Restrict set sizes to 2 mod 5 only, so the sizes are 2 and 7 and the f (not processed)
+              - cfb15ebb0220 Allow set sizes congruent to 4 mod 5 in addition to 2 and 3. (not processed)
+            - ecd17abc4fee Allow set sizes congruent to 2, 3 or 4 mod 5, which admits more member f={'3': 4, '4': 7, '5': 11, '6': 15, '7': 21, '8': 29} surprise=4.40 mode=full
+              - 9cf1c3941c13 Require every pairwise intersection to be congruent to 1 mod 5, a sing f={'3': 3, '4': 4, '5': 5, '6': 5, '7': 7, '8': 8} surprise=0.21 mode=full
+                - 3cbf8ec9d686 Allow every nonzero size residue mod 5, which adds sizes 1 and 6 mod 5 f={'3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8} surprise=0.32 mode=full
+                  - 5028b6a524fc Allow pairwise intersections to be 1 or 2 mod 5 instead of only 1 mod  f={'3': 4, '4': 7, '5': 11, '6': 16, '7': 22, '8': 29} surprise=1.27 mode=full
+                    - be4654d8768b Allow pairwise intersections to be 1, 2 or 3 mod 5, which is a weaker  (not processed)
+                    - 7be9f5f3e8a8 Drop sizes that are 4 mod 5 from the allowed set sizes. (not processed)
+                  - 5ed8767ce6ef Remove the size restriction, so sizes divisible by 5 are also allowed, (not processed)
+                - d9de14ac6875 Restrict the allowed sizes to 2 or 3 mod 5 by dropping residue 4. (not processed)
+            - 4ea8582b827c Also require the actual intersection sizes to be exactly 1 or 2, which f={'3': 4, '4': 7, '5': 10, '6': 15, '7': 21, '8': 29} surprise=0.82 mode=full
+              - ebc22f0d8a3c Drop the size condition so members may have any size, keeping pairwise (not processed)
+              - 7ef949417b53 Drop the mod-5 intersection condition, which is implied by the absolut f={'3': 4, '4': 7, '5': 10, '6': 15, '7': 21, '8': 29} surprise=0.09 mode=full
+                - 35a8f159d25e Allow pairwise intersections of size 1, 2 or 3 instead of only 1 or 2. f={'3': 4, '4': 7, '5': 10, '6': 15, '7': 22, '8': 29} surprise=0.27 mode=full
+                  - 7eadb2495056 Allow pairwise intersections of size 4 as well, so int_abs becomes {1, f={'3': 4, '4': 7, '5': 10, '6': 15, '7': 22, '8': 29} surprise=0.23 mode=full
+                    - 9ce4121b32d3 Also allow intersection size 5. (not processed)
+                    - 34010bbc473f Allow disjoint pairs (intersection size 0) as well. (not processed)
+                    - 5d764386ed41 Also allow set sizes congruent to 4 mod 5. f={'3': 4, '4': 8, '5': 15, '6': 25, '7': 42, '8': 64} surprise=0.34 mode=full
+                      - e93120ab9502 Also allow pairwise intersections of size exactly 5. (not processed)
+                      - acc77278e2cc Also allow sizes congruent to 1 mod 5, such as singletons and 6-sets. f={'3': 4, '4': 8, '5': 15, '6': 27, '7': 43, '8': 67} surprise=0.49 mode=full
+                        - c8623de9aba0 Drop the intersection condition entirely, so only the size residue con (not processed)
+                        - 4169194f3b25 Allow intersection sizes up to 7, which removes the upper cap and leav (not processed)
+                        - a36c47af2509 Restrict pairwise intersections to sizes 1 to 3, so the family has no  (not processed)
+                  - 8a0335f3d698 Also allow set sizes congruent to 4 mod 5, which adds the size-4 sets  (not processed)
+                - de8550df3c07 Restrict member sizes to ≡2 mod 5 only, so at n≤8 the sizes are 2 or 7 f={'3': 3, '4': 3, '5': 4, '6': 5, '7': 7, '8': 8} surprise=0.05 mode=full
+      - 5471f13e5222 Also allow sizes 3 mod 5, so that 3-sets pairwise meeting in exactly 2 (not processed)
+      - aade6d93877c Drop residue 4 from the allowed intersections, leaving only intersecti (not processed)
+    - 2e4b3800d7ee Drop the size condition and keep only the pairwise intersection condit (not processed)
+  - 87b10e814823  f={'4': 1, '5': 1, '6': 2, '7': 2, '8': 2, '9': 2, '10': 2, '11': 2, '12': 3, '13': 3, '14': 3, '15': 3, '16': 3, '17': 3, '18': 4, '19': 3, '20': 4, '21': 5, '22': 4, '23': 4, '24': 5, '25': 5, '26': 5, '27': 5, '28': 5, '29': 5, '30': 6} surprise=2.34 mode=full
+  - 0adc5cb80773  f={'3': 1, '4': 2, '5': 2, '6': 3, '7': 8, '8': 9} surprise=0.46 mode=full
+    - 5eb5367fa7a5 Intersections may be 0 or 1 mod 3 instead of 1 or 2, changing which re (not processed)
+    - c2dc838992eb Allow set sizes congruent to 1 or 2 mod 3, which enlarges the pool of  f={'3': 3, '4': 5, '5': 7, '6': 11, '7': 13, '8': 17} surprise=1.98 mode=full
+      - d670ec2a2cc1 Require all pairwise intersections to be exactly 1 mod 3, instead of 1 (not processed)
+      - bb88a8d37edc Drop the restriction on set sizes, so sizes divisible by 3 are allowed (not processed)
+      - 6dcd8a523823 Allow intersections to be 0 or 1 mod 3, instead of 1 or 2 mod 3, while (not processed)
+  - d6506a5c484f  f={'3': 1, '4': 1, '5': 1, '6': 1, '7': 1, '8': 4} surprise=0.05 mode=full
+    - 65a16ae7e1d0 Pairwise intersections must be ≡3 (mod 5) instead of ≡4. (not processed)
+    - 77abdb6daebb Allow set sizes ≡1 or 2 (mod 5), so sizes 2 and 7 are permitted as wel (not processed)
+    - 294b29126a48 Additionally require every pairwise intersection to have size at least f={'3': 1, '4': 1, '5': 1, '6': 1, '7': 1, '8': 1} surprise=0.04 mode=full
+      - 4c51d4677c76 Allow intersection sizes ≡ 0 or 4 mod 5, so intersections of size 5 ar (not processed)
+      - 87755a5eee82 Allow set sizes ≡ 1 or 2 mod 5, so sizes 1, 2, 6 and 7 are allowed. (not processed)
+  - a2de34342b6b  f={'3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 28} surprise=0.04 mode=full
+    - 98287e5f74aa Also allow member sizes 2 mod 5, so sizes 2 and 7 are permitted. f={'3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 28} surprise=0.08 mode=full
+      - 92ddac7a6dcf Also allow pairwise intersections congruent to 1 mod 5. f={'3': 6, '4': 10, '5': 15, '6': 21, '7': 28, '8': 44} surprise=0.09 mode=full
+        - 11be1c657fe4 Also allow pairwise intersections of size 2 mod 5, so the allowed set  (not processed)
+        - e038ea4d0e08 Also allow member sizes that are 3 mod 5, so the allowed sizes are {1, (not processed)
+        - 76907d8a19ae Forbid intersections of size 4 mod 5, so the allowed set is {0,1}. (not processed)
+      - dcebf53be478 Require pairwise intersections to be 0 mod 5 only. (not processed)
+  - 2c81d0d691b0  f={'3': 1, '4': 2, '5': 2, '6': 2, '7': 4, '8': 4} surprise=0.13 mode=full
+    - 1ea123391598 Pairwise intersections must be ≡0 mod 3 instead of ≡1, so disjoint set f={'3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8} surprise=0.17 mode=full
+      - 6032e7b4292a Require set sizes to be 0 mod 3 instead of 1 mod 3, which allows the e (not processed)
+      - 3aef86a2fe5a Require pairwise intersections to be 2 mod 3 instead of 0 mod 3, which (not processed)
+    - 61615ea6cebc Set sizes must be ≡2 mod 3 while intersections stay ≡1; a star of 2-se f={'3': 3, '4': 3, '5': 4, '6': 6, '7': 6, '8': 7} surprise=0.79 mode=full
+      - 00ce979a26cc Drop the size condition, so members can have any size and only the pai (not processed)
+  - abfb52520f31  f={'4': 2, '5': 2, '6': 2, '7': 2, '8': 3, '9': 3, '10': 3, '11': 3, '12': 4, '13': 3, '14': 4, '15': 4, '16': 4, '17': 4, '18': 6, '19': 4, '20': 5, '21': 5, '22': 6, '23': 5, '24': 6, '25': 5, '26': 6, '27': 6, '28': 7, '29': 6, '30': 7} surprise=3.76 mode=full
+  - 301c2494f4b3  f={'4': 2, '5': 3, '6': 3, '7': 3, '8': 4, '9': 4, '10': 4, '11': 5, '12': 5, '13': 6, '14': 6, '15': 6, '16': 6, '17': 7, '18': 7, '19': 8, '20': 8, '21': 9, '22': 9, '23': 9, '24': 9, '25': 9, '26': 9, '27': 9, '28': 9, '29': 9, '30': 9} surprise=2.48 mode=full
+  - f7cb64d70afa  f={'4': 3, '5': 3, '6': 3, '7': 4, '8': 4, '9': 4, '10': 4, '11': 4, '12': 5, '13': 5, '14': 5, '15': 5, '16': 5, '17': 5, '18': 6, '19': 6, '20': 6, '21': 6, '22': 6, '23': 6, '24': 6, '25': 6, '26': 7, '27': 7, '28': 7, '29': 7, '30': 7} surprise=0.04 mode=full
+  - 5a8c1dc9da5b  f={'4': 1, '5': 2, '6': 2, '7': 2, '8': 2, '9': 2, '10': 2, '11': 3, '12': 2, '13': 3, '14': 3, '15': 3, '16': 3, '17': 3, '18': 3, '19': 4, '20': 4, '21': 3, '22': 4, '23': 4, '24': 4, '25': 4, '26': 4, '27': 4, '28': 4, '29': 4, '30': 4} surprise=2.67 mode=full
+  - 45ff4cf21f16  f={'3': 1, '4': 1, '5': 1, '6': 1, '7': 3, '8': 8} surprise=0.06 mode=full
+    - 672a19cfacd5 Also allow pairwise intersections of size 4, so the intersection condi (not processed)
+    - 701636b63f8f Also allow sizes ≡ 1 mod 5, so 6-sets (and 1-sets) become possible. f={'3': 1, '4': 1, '5': 1, '6': 1, '7': 3, '8': 8} surprise=0.07 mode=full
+      - 07e6612df5eb Allow pairwise intersections of size 4 as well as 2 and 3. (not processed)
+      - 75670f611cea Also allow sizes congruent to 2 mod 5, which adds sizes 2 and 7 at n ≤ (not processed)
+      - 72af1413489d Require every pairwise intersection to have size exactly 2. (not processed)
+  - 9f7fc92e1c06  f={'3': 1, '4': 2, '5': 2, '6': 3, '7': 7, '8': 9} surprise=0.47 mode=full
+    - 6535e3c23c02 Require sizes divisible by 3 (sizes 3 or 6) instead of sizes ≡ 1 mod 3 f={'3': 1, '4': 4, '5': 10, '6': 10, '7': 16, '8': 22} surprise=0.06 mode=full
+      - ebe12a4fa069 Allow pairwise intersections of size 3 as well as 1 and 2. f={'3': 1, '4': 4, '5': 10, '6': 11, '7': 16, '8': 22} surprise=0.08 mode=full
+        - e5148017ca83 Allow disjoint pairs, so intersection size 0 is also permitted. This l (not processed)
+        - c7f5e31944ca Allow set sizes ≡ 0 or 1 mod 3, which adds sizes 1, 4 and 7 to the all (not processed)
+    - 97a935b16dc2 Also allow pairwise intersections of size 3. (not processed)
+  - b12cdffb1cb3  f={'4': 1, '5': 2, '6': 2, '7': 2, '8': 2, '9': 3, '10': 3, '11': 3, '12': 3, '13': 4, '14': 4, '15': 4, '16': 4, '17': 4, '18': 4, '19': 4, '20': 5, '21': 5, '22': 5, '23': 5, '24': 5, '25': 5, '26': 5, '27': 6, '28': 5, '29': 6, '30': 6} surprise=1.44 mode=full
+  - 1978ba82ea30  f={'3': 1, '4': 1, '5': 1, '6': 1, '7': 3, '8': 7} surprise=0.08 mode=full
+    - c79e1b9f0017 Sizes are ≡0 mod 3 (3 or 6 in [8]) instead of ≡2, with pairwise inters (not processed)
+    - 37368a0901d2 Pairwise intersections may be 3 or 4 instead of only 3. (not processed)
+  - c9ea9b438743  f={'4': 1, '5': 1, '6': 2, '7': 2, '8': 2, '9': 2, '10': 2, '11': 3, '12': 3, '13': 3, '14': 3, '15': 3, '16': 3, '17': 3, '18': 3, '19': 3, '20': 3, '21': 3, '22': 4, '23': 4, '24': 4, '25': 4, '26': 4, '27': 4, '28': 5, '29': 5, '30': 5} surprise=4.10 mode=full
+  - 4089ba59effe  f={'3': 1, '4': 1, '5': 1, '6': 1, '7': 2, '8': 2} surprise=0.05 mode=full
+    - 0cdd64821aec Allow sizes ≡ 2 or 3 mod 5, so 3-sets can be used. (not processed)
+  - 65a4282530c8  f={'3': 3, '4': 3, '5': 4, '6': 5, '7': 6, '8': 8} surprise=0.05 mode=full
+    - ae130be763d1 Allow sizes ≡ 2 or 3 mod 5, so 3-sets are allowed (e.g. Fano plane lin (not processed)
+    - eb0841475257 Allow pairwise intersections of size 0 or 1, so disjoint sets are perm f={'3': 3, '4': 6, '5': 10, '6': 15, '7': 21, '8': 28} surprise=0.03 mode=full
+      - c231e6436873 Require members to be pairwise disjoint (intersection exactly 0) inste (not processed)
+  - 5693caf2868c  f={'4': 2, '5': 3, '6': 3, '7': 3, '8': 4, '9': 4, '10': 4, '11': 4, '12': 4, '13': 5, '14': 5, '15': 5, '16': 5, '17': 5, '18': 5, '19': 5, '20': 5, '21': 6, '22': 6, '23': 6, '24': 6, '25': 6, '26': 6, '27': 6, '28': 6, '29': 7, '30': 7} surprise=1.00 mode=full
+  - 20ac7313c8c8  f={'3': 1, '4': 1, '5': 1, '6': 2, '7': 2, '8': 3} surprise=0.05 mode=full
+    - e0d19f1d9095 Also allow pairwise intersections of size 1, so triples can form a par f={'3': 1, '4': 1, '5': 2, '6': 4, '7': 7, '8': 9} surprise=0.05 mode=full
+      - ebd49354a033 Also allow pairwise intersections of size 2, so any distinct 3-subsets (not processed)
+      - 27990aff3826 Allow member sizes ≡3 or 4 mod 5, so 4-sets and 9-sets become availabl (not processed)
+      - c00254238e2e Forbid intersection size 3, so the family becomes a linear 3-uniform p f={'3': 1, '4': 1, '5': 2, '6': 4, '7': 7, '8': 8} surprise=0.06 mode=full
+        - 820a273b818d Allow pairwise intersections of size up to 2, so all 3-subsets are com f={'3': 1, '4': 4, '5': 10, '6': 20, '7': 35, '8': 56} surprise=0.03 mode=full
+        - 55a954c77977 Also allow sizes congruent to 2 mod 5, so 2-sets can fill the pairs th (not processed)
+    - 5dad5415c3a6 Allow member sizes ≡ 4 (mod 5) as well as 3, so sizes 3, 4, 8 and 9 ar (not processed)
+    - 7952ae84fe24 Require members to be pairwise disjoint, with intersection 0 only. f={'3': 1, '4': 1, '5': 1, '6': 2, '7': 2, '8': 2} surprise=0.04 mode=full
+      - 3732c128ff51 Sizes must be ≡1 mod 5, so singletons are allowed and the family becom (not processed)
+      - 53983e692437 Sizes ≡3 or 4 mod 5 are allowed, so the disjoint sets may have sizes 3 (not processed)
+  - ac748c9ce019  f={'3': 1, '4': 1, '5': 1, '6': 1, '7': 7, '8': 7} surprise=0.05 mode=full
+    - 8184e1818bf8 Drop the minimum intersection requirement so that disjoint members are (not processed)
+    - e53fc3cef1ce Require pairwise intersections of at least 6, which together with 0 mo f={'3': 1, '4': 1, '5': 1, '6': 1, '7': 1, '8': 1} surprise=0.04 mode=full
+      - 823a6e767d9b Drop the lower bound on intersections to 0, so disjoint sets are allow (not processed)
+      - fc813f837060 Lower the minimum intersection from 6 to 5, which allows 6-sets that p f={'3': 1, '4': 1, '5': 1, '6': 1, '7': 7, '8': 7} surprise=0.07 mode=full
+        - 40a52c7e4c4d Also allow set sizes ≡2 mod 5, so sizes 2 and 7 become possible. This  f={'3': 1, '4': 1, '5': 1, '6': 1, '7': 7, '8': 7} surprise=0.06 mode=full
+          - ff2c2172e346 Also allow intersections of size 1 mod 5, so with int_min 5 the sizes  (not processed)
+      - 55285b300425 Require intersections to be ≡1 mod 5 and at least 6, so the only possi (not processed)
+    - ed7a99282450 Allow member sizes 1 or 2 mod 5, so sizes 2 and 7 are permitted as wel (not processed)
+  - c73127941c6f  f={'3': 1, '4': 1, '5': 1, '6': 2, '7': 8, '8': 36} surprise=0.06 mode=full
+    - 3bcc4dc2a593 Allow sizes ≡ 1, 2 or 3 mod 5, which adds the full set [8] at n=8 and  (not processed)
+    - 43e61f308ed0 Require pairwise intersections of size at least 5. Two 6-sets in [8] m (not processed)
+    - 4b18577f94a3 Require pairwise intersections of size at least 3. At n=8 every 6- and (not processed)
+  - 87a1f345ee8d  f={'3': 1, '4': 1, '5': 1, '6': 1, '7': 7, '8': 28} surprise=0.04 mode=full
+    - 20591dee9baa Require pairwise intersections of at least 5, which is much stronger t f={'3': 1, '4': 1, '5': 1, '6': 1, '7': 7, '8': 7} surprise=0.05 mode=full
+      - 140e953085f1 Relax the minimum pairwise intersection from 5 to 4. (not processed)
+      - 96a02a44efff Tighten the minimum pairwise intersection from 5 to 6, so that for n ≤ (not processed)
+    - 1b613eb72f68 Use sizes ≡0 mod 5, so the 5-sets of [8] are allowed. Any two of them  (not processed)
+  - b84668247195  f={'4': 1, '5': 1, '6': 1, '7': 2, '8': 2, '9': 2, '10': 2, '11': 2, '12': 3, '13': 3, '14': 3, '15': 3, '16': 3, '17': 3, '18': 3, '19': 3, '20': 3, '21': 3, '22': 3, '23': 3, '24': 3, '25': 4, '26': 4, '27': 4, '28': 5, '29': 5, '30': 4} surprise=5.34 mode=full
+  - 4fbf5042559c  f={'4': 2, '5': 3, '6': 3, '7': 3, '8': 3, '9': 4, '10': 4, '11': 4, '12': 5, '13': 5, '14': 6, '15': 6, '16': 6, '17': 6, '18': 6, '19': 6, '20': 7, '21': 7, '22': 7, '23': 7, '24': 7, '25': 8, '26': 8, '27': 8, '28': 8, '29': 8, '30': 9} surprise=3.47 mode=full
+  - 9146bd08f76c  f={'4': 3, '5': 3, '6': 3, '7': 3, '8': 4, '9': 4, '10': 4, '11': 4, '12': 4, '13': 5, '14': 5, '15': 5, '16': 5, '17': 5, '18': 5, '19': 6, '20': 6, '21': 6, '22': 6, '23': 6, '24': 6, '25': 6, '26': 6, '27': 7, '28': 7, '29': 7, '30': 7} surprise=0.70 mode=full
+  - ee901c84a509  f={'4': 1, '5': 1, '6': 2, '7': 2, '8': 2, '9': 2, '10': 2, '11': 2, '12': 4, '13': 2, '14': 4, '15': 3, '16': 4, '17': 3, '18': 4, '19': 4, '20': 4, '21': 4, '22': 4, '23': 4, '24': 4, '25': 4, '26': 4, '27': 4, '28': 6, '29': 4, '30': 6} surprise=2.89 mode=full
+  - 65ca06540480  f={'4': 1, '5': 2, '6': 2, '7': 2, '8': 2, '9': 2, '10': 2, '11': 2, '12': 3, '13': 3, '14': 3, '15': 3, '16': 3, '17': 3, '18': 3, '19': 4, '20': 4, '21': 4, '22': 4, '23': 4, '24': 4, '25': 4, '26': 5, '27': 4, '28': 5, '29': 5, '30': 5} surprise=5.92 mode=full
+  - 15be20f7c86b  f={'3': 1, '4': 2, '5': 2, '6': 3, '7': 4, '8': 4} surprise=0.09 mode=full
+    - 93534a161bf6 Allow pairwise intersections of size 1 as well as 0 and 2. (not processed)
+    - 3f68d2b8f3ca Allow sizes congruent to 3 mod 5 as well as 2 mod 5, so 3-sets and 8-s (not processed)
+  - 9713162e020d  f={'3': 1, '4': 2, '5': 2, '6': 2, '7': 3, '8': 3} surprise=0.06 mode=full
+    - 42176b0fdd73 Allow pairwise intersections of size 0 as well as 1, so disjoint sets  f={'3': 3, '4': 5, '5': 6, '6': 7, '7': 9, '8': 10} surprise=0.05 mode=full
+      - 55e9d254f665 Allow set sizes ≡ 1 or 2 mod 3, so sizes 2, 5 and 8 are permitted as w (not processed)
+      - dfeec127419b Require distinct members to be pairwise disjoint. (not processed)
+    - ef371b35e02f Allow sizes ≡ 1 or 2 mod 3, which admits 2-sets and lets a star of pai (not processed)
+    - 6386533f3db5 Require sizes ≡ 0 mod 3, so the sets have size 3 or 6 and pairwise int (not processed)
+  - 306bbb336c3f  f={'4': 1, '5': 1, '6': 2, '7': 2, '8': 2, '9': 2, '10': 2, '11': 2, '12': 2, '13': 2, '14': 3, '15': 3, '16': 3, '17': 3, '18': 3, '19': 3, '20': 3, '21': 4, '22': 4, '23': 4, '24': 4, '25': 4, '26': 4, '27': 4, '28': 4, '29': 4, '30': 4} surprise=7.03 mode=full
+  - 05534495f261  f={'4': 3, '5': 3, '6': 3, '7': 3, '8': 4, '9': 4, '10': 5, '11': 5, '12': 5, '13': 5, '14': 6, '15': 6, '16': 7, '17': 7, '18': 7, '19': 7, '20': 7, '21': 8, '22': 8, '23': 8, '24': 8, '25': 9, '26': 9, '27': 9, '28': 9, '29': 9, '30': 9} surprise=4.93 mode=full
+  (60 mutations rejected, 0 refused as uncheckable)
