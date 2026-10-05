@@ -1,5 +1,75 @@
 # Results
 
+## Run 2: A5 notes, and A4 on scanned problems (2026-10-05)
+
+**Setup:**
+- claude-sonnet-5-5; seed 2; problems from `scan/selected.jsonl` (K = 40, 20 per family);
+- stores `store/run2-a5-{notes,nonotes}` and `store/run2-a4-{fixed,adaptive}`, each with
+  `report.txt` and `run.log`;
+- the paired and within-family numbers below were recomputed by hand from the stores.
+
+**The scan surfaces lynchpins.** Extracting the extremal families by brute force:
+- "pairwise intersections of size 1 or 3" at n = 7 is the Fano plane (its 7 lines, which
+  cover every pair exactly once) plus the whole set;
+- "intersections of size 0 or 2" at n = 8 is S(3,4,8) (14 blocks, which cover every triple
+  exactly once) plus the empty set.
+
+Both statements have length 3, and the scan was told about neither object. The top scorer
+(sizes ≡ 1 mod 5 with intersections at least 2) is a threshold artifact: nothing can
+happen until n = 7.
+
+**The model already knows the lynchpins.** At the break it gave 0.6 to 15 (S(3,4,8)) and
+0.5 to 8 (Fano). It was less sure of the ordinary small cases before the break.
+
+**A5, notes, is null.**
+- The paired difference (notes − no notes) is −0.05 bits per problem (median +0.003).
+- Notes helped on 19 problems and hurt on 21; sign test p = 0.88.
+- The notes reached 38 of 40 prompts.
+- Caveat: the scan picks problems with distinct sequences, so the notes described
+  unrelated problems, and they carried values only, not explanations. A fair test of
+  compression progress needs related problems (a parent and its mutants, or problems
+  sharing an extremal object) and needs the explanation in the notes.
+
+**Side result: cheap surprise against the model's surprise** (no-notes arm). The pooled
+Spearman(S, bits) is +0.57 (n = 40), but much of that is the difference between families.
+
+| Within family | Spearman(S, bits) | Spearman(S/L, bits) |
+|---|---|---|
+| setfam (n = 20) | +0.54 | +0.05 |
+| addfree (n = 20) | +0.10 | −0.12 |
+
+Dividing by statement length adds nothing yet.
+
+**A4 with the bits trigger.** About a quarter of the problems were surprising: 9 of 34
+(fixed) and 8 of 33 (adaptive).
+
+| | fixed | adaptive |
+|---|---|---|
+| problems | 34 | 33 |
+| bounds | 54 | 57 |
+| violated | 0 | 0 |
+| tight at the largest n | 5 | 6 |
+| median best-per-problem g/trivial | 0.267 | 0.267 |
+| wins per 100 calls | 51 | 49 |
+| prior held on narrow problems | n/a | 24/25 = 96% (1 escalation) |
+
+- **"Assume the prior" is supported.** On unsurprising problems the prior bridge won 24 of
+  25 times, and per-problem bound quality matched the fixed arm.
+- **"Widen on surprise" is not supported here.** In the fixed arm, wins from bridges
+  outside the prior came on 4 of 9 surprising problems and 15 of 25 unsurprising ones
+  (Fisher p = 0.46).
+  - A likely reason: the surprise was about values, while the prior governs methods. Being
+    unable to predict f(n) (often an irregular, number-theoretic sequence) does not mean
+    the usual bound technique fails.
+  - Reticle's version works because its surprise and its prior live in the same channel.
+    The next test should trigger widening on method surprise, such as the prior's bound
+    being loose or failing, rather than on value surprise.
+- **Bounds are safe but loose.** Across run 2, 0 of 111 bounds were violated, and only
+  about 10% were tight at the largest n.
+- **Cross-family reuse fired only for generic tools** (double counting with pigeonhole, or
+  with Cauchy–Schwarz). Reuse as a measure of importance rewards weak, general lemmas.
+  Weighting reuse by tightness is the obvious next step.
+
 ## Run 2 scan (2026-10-05, after A4 run 1)
 
 Command: `python -m mathexp scan` (defaults), one process at idle priority. Outputs:

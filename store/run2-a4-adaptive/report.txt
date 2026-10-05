@@ -1,0 +1,145 @@
+store store\run2-a4-adaptive  (all runs)
+33 problems processed, 57 weaves, 100 calls (100 parsed)
+
+== Calibration (domain x kind x level x model) ==
+domain   kind             level     model                   n  scr   acc  conf    gap  brier  cov80  medlog2   bits  runs z  chg p
+addfree  bound_holds      mechanism claude-sonnet-5-5      30   30  1.00  0.96  +0.04  0.002     --       --     --      --   1.00
+addfree  distribution     value     claude-sonnet-5-5     405  405  0.91  0.92  -0.01  0.069     --       --   1.68  -13.29   0.00
+addfree  mutation_effect  mechanism claude-sonnet-5-5      11    0    --    --     --     --     --       --     --      --     --
+addfree  recognition      ontology  claude-sonnet-5-5       2    0    --    --     --     --     --       --     --      --     --
+addfree  top1             value     claude-sonnet-5-5     405  405  0.61  0.54  +0.07  0.190     --       --     --   -9.38   0.00
+setfam   bound_holds      mechanism claude-sonnet-5-5      27   27  1.00  0.96  +0.04  0.002     --       --     --      --   1.00
+setfam   distribution     value     claude-sonnet-5-5     108  108  0.94  0.95  -0.01  0.049     --       --   0.80   -5.10   0.12
+setfam   mutation_effect  mechanism claude-sonnet-5-5      28    0    --    --     --     --     --       --     --      --     --
+setfam   recognition      ontology  claude-sonnet-5-5       2    0    --    --     --     --     --       --     --      --     --
+setfam   top1             value     claude-sonnet-5-5     108  108  0.92  0.85  +0.07  0.075     --       --     --   -2.91   0.84
+
+== Top surprises (mean bits, -log2 P(f) (run 2)) ==
+  5.99 (max 9.79) 91d5c47db43e scan     f={'3': 1, '4': 1, '5': 1, '6': 2, '7': 8, '8': 15}
+  4.51 (max 6.91) c8daab22e0c1 scan     f={'4': 2, '5': 2, '6': 2, '7': 2, '8': 2, '9': 2, '10': 2, '11': 2, '12': 2, '13': 3, '14': 3, '15': 3, '16': 4, '17': 4, '18': 4, '19': 4, '20': 4, '21': 4, '22': 4, '23': 4, '24': 4, '25': 4, '26': 4, '27': 4, '28': 5, '29': 4, '30': 5}
+  4.43 (max 8.02) 5083e7aeea57 scan     f={'4': 1, '5': 2, '6': 2, '7': 2, '8': 3, '9': 3, '10': 3, '11': 3, '12': 3, '13': 3, '14': 3, '15': 3, '16': 3, '17': 4, '18': 4, '19': 4, '20': 4, '21': 4, '22': 5, '23': 5, '24': 4, '25': 5, '26': 5, '27': 5, '28': 5, '29': 6, '30': 6}
+  2.67 (max 7.49) 41ecd66306bf scan     f={'4': 2, '5': 2, '6': 2, '7': 3, '8': 3, '9': 3, '10': 3, '11': 3, '12': 3, '13': 3, '14': 3, '15': 3, '16': 4, '17': 5, '18': 4, '19': 4, '20': 4, '21': 4, '22': 5, '23': 5, '24': 5, '25': 5, '26': 6, '27': 5, '28': 6, '29': 7, '30': 6}
+  2.17 (max 12.03) 7ed6d927bd42 scan     f={'3': 2, '4': 3, '5': 3, '6': 4, '7': 4, '8': 8}
+  2.07 (max 9.49) 7948ba393b9b scan     f={'3': 7, '4': 11, '5': 16, '6': 22, '7': 29, '8': 45}
+  2.04 (max 6.75) bada21026ac6 scan     f={'4': 2, '5': 2, '6': 2, '7': 2, '8': 3, '9': 3, '10': 3, '11': 3, '12': 4, '13': 4, '14': 4, '15': 4, '16': 5, '17': 4, '18': 4, '19': 4, '20': 5, '21': 5, '22': 6, '23': 4, '24': 7, '25': 5, '26': 7, '27': 5, '28': 7, '29': 5, '30': 7}
+  1.79 (max 7.26) f917883e11bb scan     f={'4': 2, '5': 3, '6': 3, '7': 4, '8': 4, '9': 4, '10': 4, '11': 4, '12': 5, '13': 5, '14': 5, '15': 6, '16': 6, '17': 6, '18': 6, '19': 7, '20': 8, '21': 8, '22': 8, '23': 8, '24': 8, '25': 8, '26': 8, '27': 8, '28': 8, '29': 9, '30': 9}
+
+== Weave headline: tight at n_max, median g/trivial (then wins) ==
+  scan     bounds=57   consistent=57   tight_at_n_max=6    median g/trivial=0.500  wins=49
+
+== Weave status counts ==
+  named    n=0    consistent=0 violated=0 insufficient=0 error=0  wins=0  with_tight=0
+  variant  n=0    consistent=0 violated=0 insufficient=0 error=0  wins=0  with_tight=0
+  scan     n=57   consistent=57 violated=0 insufficient=0 error=0  wins=49  with_tight=25
+
+== Reuse / importance of (bridge, lemma) pairs (wins only) ==
+  double_counting      pigeonhole                 families=2 problems=3 (named 0, variant 0, scan 3) best g/trivial=0.029
+  double_counting      cauchy_schwarz             families=2 problems=2 (named 0, variant 0, scan 2) best g/trivial=0.094
+  double_counting      sidon_counting             families=1 problems=7 (named 0, variant 0, scan 7) best g/trivial=0.167
+  incidence_matrix     gram_rank                  families=1 problems=5 (named 0, variant 0, scan 5) best g/trivial=0.062
+  charvec_fp           fisher                     families=1 problems=4 (named 0, variant 0, scan 4) best g/trivial=0.031
+  charvec_fp           gram_rank                  families=1 problems=4 (named 0, variant 0, scan 4) best g/trivial=0.031
+  orbit_averaging      pigeonhole                 families=1 problems=4 (named 0, variant 0, scan 4) best g/trivial=0.500
+  double_counting      fisher                     families=1 problems=3 (named 0, variant 0, scan 3) best g/trivial=0.062
+  fourier_indicator    parseval                   families=1 problems=3 (named 0, variant 0, scan 3) best g/trivial=0.500
+  graph_spectrum       pigeonhole                 families=1 problems=3 (named 0, variant 0, scan 3) best g/trivial=0.500
+  incidence_matrix     self_orthogonal            families=1 problems=3 (named 0, variant 0, scan 3) best g/trivial=0.094
+  translates           disjoint_translates        families=1 problems=3 (named 0, variant 0, scan 3) best g/trivial=0.500
+  charvec_fp           dim_independent            families=1 problems=2 (named 0, variant 0, scan 2) best g/trivial=0.363
+  charvec_fp           self_orthogonal            families=1 problems=2 (named 0, variant 0, scan 2) best g/trivial=0.094
+  multilinear_poly     diagonal_criterion         families=1 problems=2 (named 0, variant 0, scan 2) best g/trivial=0.289
+
+== A4: assume the prior, widen on surprise (trigger: 4 bits; run 1: |log2| >= 1) ==
+  adaptive  wins per 100 calls: 49.0  (49 wins / 100 calls, 1 runs)
+  adaptive, unsurprising (narrow): prior held 24/25 = 96%  (escalated 1)
+  fixed breadth: problems with a win from a bridge outside the prior
+    surprising    0/0
+    unsurprising  0/0
+
+== A5: notes and compression progress (predict-only; bits per problem) ==
+  (no predict-only problems)
+
+== Side result: does cheap surprise predict model surprise? (A5 no-notes arm) ==
+  (no scan problems in a no-notes predict-only run)
+
+== What-if tree ==
+  - e3b013f673a6  f={'3': 0, '4': 1, '5': 1, '6': 1, '7': 1, '8': 2} surprise=0.03 mode=narrow
+    - e91df1fc3017 Allow pairwise intersections of size 0 or 1 instead of only 0. (not processed)
+  - 3962f8436aa4  f={'4': 3, '5': 3, '6': 3, '7': 4, '8': 4, '9': 4, '10': 4, '11': 4, '12': 4, '13': 5, '14': 5, '15': 5, '16': 5, '17': 5, '18': 6, '19': 6, '20': 6, '21': 6, '22': 6, '23': 6, '24': 6, '25': 6, '26': 7, '27': 7, '28': 7, '29': 7, '30': 7} surprise=0.99 mode=narrow
+  - c2f4121e29f8  f={'3': 1, '4': 1, '5': 1, '6': 1, '7': 1, '8': 2} surprise=0.05 mode=narrow
+    - 45ff4cf21f16 Allow pairwise intersections of size 2 or 3 instead of exactly 2. (not processed)
+  - 7948ba393b9b  f={'3': 7, '4': 11, '5': 16, '6': 22, '7': 29, '8': 45} surprise=2.07 mode=wide
+    - 65f494a16a85 Allow only intersection sizes ≡ 0 or 1 mod 5, removing residue 4. (not processed)
+    - 5620b33da547 Allow residue 2 as well, so only residue 3 is forbidden. (not processed)
+    - 07ffb6e5b3cd Require every set size to be ≡ 2 mod 5. (not processed)
+    - cb05cf9384ef Require all sets to be of size exactly 3, a uniform family. (not processed)
+    - 520e5cf41342 Additionally require pairwise intersections of size at least 1, making (not processed)
+  - 8e35354f6001  f={'3': 1, '4': 1, '5': 2, '6': 2, '7': 2, '8': 3} surprise=0.06 mode=narrow
+    - c296b8196ff8 Pairwise intersections may have size 2 or 3 instead of exactly 2. (not processed)
+  - 6f8072697ddf  f={'4': 1, '5': 2, '6': 2, '7': 2, '8': 2, '9': 3, '10': 3, '11': 3, '12': 3, '13': 4, '14': 4, '15': 4, '16': 4, '17': 4, '18': 4, '19': 4, '20': 4, '21': 4, '22': 4, '23': 4, '24': 5, '25': 5, '26': 5, '27': 5, '28': 5, '29': 5, '30': 5} surprise=0.87 mode=narrow
+  - 43da31e103a3  f={'3': 1, '4': 4, '5': 4, '6': 5, '7': 5, '8': 7} surprise=0.09 mode=narrow
+    - 60dde5cb6608 Allow pairwise intersections of size 0 as well as 2, so disjoint odd-s (not processed)
+  - bada21026ac6  f={'4': 2, '5': 2, '6': 2, '7': 2, '8': 3, '9': 3, '10': 3, '11': 3, '12': 4, '13': 4, '14': 4, '15': 4, '16': 5, '17': 4, '18': 4, '19': 4, '20': 5, '21': 5, '22': 6, '23': 4, '24': 7, '25': 5, '26': 7, '27': 5, '28': 7, '29': 5, '30': 7} surprise=2.04 mode=wide
+  - 7ed6d927bd42  f={'3': 2, '4': 3, '5': 3, '6': 4, '7': 4, '8': 8} surprise=2.17 mode=wide
+    - 6032e7b4292a Only sizes divisible by 3 are allowed, so the size condition is a stri (not processed)
+    - 3c0752958f8c Sizes ≡ 0 or 1 mod 3 are allowed, so singletons are in. The 8 singleto (not processed)
+    - 6f417718a61f Pairwise intersections may be ≡ 0 or 1 mod 3, a relaxation of the orig (not processed)
+    - 002265047a94 Members must also be pairwise disjoint, so the family is a disjoint co (not processed)
+    - 0b9e7af93be3 The modulus becomes 5. Intersections must then be 0 or 5, and the allo (not processed)
+  - 56ac3354134e  f={'3': 1, '4': 1, '5': 1, '6': 2, '7': 7, '8': 7} surprise=0.10 mode=narrow
+    - a2fcd276415e Drop the requirement |A∩B| ≥ 1, so disjoint sets are allowed. Intersec (not processed)
+  - 4fae37f7f2b5  f={'3': 1, '4': 1, '5': 2, '6': 2, '7': 3, '8': 7} surprise=0.09 mode=narrow
+    - cd57d296bafb Require even set sizes instead of odd sizes, keeping pairwise intersec (not processed)
+  - 53c328507d1b  f={'3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 9} surprise=0.94 mode=narrow
+  - 1f25f8add1c0  f={'3': 1, '4': 1, '5': 1, '6': 1, '7': 2, '8': 8} surprise=0.07 mode=narrow
+    - 5ed8767ce6ef Drop the lower bound on intersection size, so pairwise intersections o (not processed)
+  - 02b116e7b597  f={'3': 3, '4': 3, '5': 4, '6': 5, '7': 6, '8': 7} surprise=0.04 mode=narrow
+    - bd0ec349b956 Allow disjoint pairs as well as pairs meeting in one point, so any two (not processed)
+  - 088e05b7c951  f={'4': 3, '5': 3, '6': 4, '7': 4, '8': 4, '9': 4, '10': 5, '11': 5, '12': 6, '13': 6, '14': 6, '15': 7, '16': 7, '17': 7, '18': 7, '19': 8, '20': 8, '21': 8, '22': 8, '23': 8, '24': 9, '25': 9, '26': 10, '27': 10, '28': 10, '29': 10, '30': 10} surprise=1.33 mode=narrow
+  - 4c7831d0ca42  f={'4': 2, '5': 3, '6': 3, '7': 4, '8': 4, '9': 5, '10': 5, '11': 6, '12': 6, '13': 7, '14': 7, '15': 7, '16': 7, '17': 8, '18': 8, '19': 9, '20': 9, '21': 9, '22': 9, '23': 10, '24': 10, '25': 11, '26': 11, '27': 11, '28': 12, '29': 12, '30': 13} surprise=1.76 mode=narrow+esc
+    - c78d7929ca5e Drop the second equation 3x+3y=2z so that only 2x+2y=3z is forbidden. (not processed)
+    - ec181981d760 Work in Z_n, where wraparound adds extra solutions to both equations. (not processed)
+    - e709626b7aa6 Replace the second equation with the sum-free condition x+y=z, with x= (not processed)
+    - 92e96f699986 Change the second equation to 3x+3y=4z, so it is no longer the mirror  (not processed)
+  - 2a076338bdcd  f={'4': 2, '5': 2, '6': 2, '7': 3, '8': 3, '9': 3, '10': 3, '11': 3, '12': 3, '13': 4, '14': 4, '15': 4, '16': 4, '17': 4, '18': 4, '19': 4, '20': 4, '21': 5, '22': 4, '23': 5, '24': 5, '25': 5, '26': 5, '27': 5, '28': 5, '29': 5, '30': 5} surprise=0.17 mode=narrow
+  - 90771a75660f  f={'4': 3, '5': 3, '6': 3, '7': 3, '8': 4, '9': 4, '10': 5, '11': 5, '12': 5, '13': 6, '14': 6, '15': 6, '16': 7, '17': 7, '18': 7, '19': 7, '20': 7, '21': 8, '22': 8, '23': 8, '24': 8, '25': 9, '26': 9, '27': 9, '28': 9, '29': 9, '30': 9} surprise=1.22 mode=narrow
+  - 96ead7b89543  f={'4': 1, '5': 1, '6': 2, '7': 2, '8': 2, '9': 2, '10': 2, '11': 2, '12': 3, '13': 2, '14': 3, '15': 3, '16': 3, '17': 3, '18': 3, '19': 3, '20': 4, '21': 4, '22': 4, '23': 4, '24': 4, '25': 4, '26': 4, '27': 4, '28': 5, '29': 4, '30': 5} surprise=0.83 mode=narrow
+  - 672aafca1461  f={'3': 4, '4': 5, '5': 6, '6': 8, '7': 9, '8': 16} surprise=0.46 mode=narrow
+    - 07db0d4e2308 Require every pairwise intersection to be odd instead of even. This is (not processed)
+  - beb272d25094  f={'4': 2, '5': 3, '6': 3, '7': 3, '8': 3, '9': 4, '10': 4, '11': 4, '12': 5, '13': 5, '14': 5, '15': 5, '16': 5, '17': 5, '18': 5, '19': 5, '20': 6, '21': 6, '22': 6, '23': 6, '24': 6, '25': 6, '26': 7, '27': 7, '28': 7, '29': 7, '30': 7} surprise=0.88 mode=narrow
+  - f917883e11bb  f={'4': 2, '5': 3, '6': 3, '7': 4, '8': 4, '9': 4, '10': 4, '11': 4, '12': 5, '13': 5, '14': 5, '15': 6, '16': 6, '17': 6, '18': 6, '19': 7, '20': 8, '21': 8, '22': 8, '23': 8, '24': 8, '25': 8, '26': 8, '27': 8, '28': 8, '29': 9, '30': 9} surprise=1.79 mode=wide
+    - 12f857ca1fa0 Drop the second equation x+2y=z, so only 3-term AP-freeness is require (not processed)
+    - e9610d054295 Replace x+2y=z by x+y=z, so A must be 3AP-free and also avoid x+y=z, w (not processed)
+    - ee901c84a509 Work in Z_n with wraparound instead of the integers, so there are more (not processed)
+    - 161ee615ae0a Replace 3AP-free with sum-free, which forbids x+y=z including x=y. (not processed)
+  - 413f3a994731  f={'3': 4, '4': 5, '5': 6, '6': 7, '7': 9, '8': 15} surprise=1.41 mode=narrow
+    - 60faa442a2cf Also allow pairwise intersections of size 1, so the condition becomes  (not processed)
+  - 2fc70dd5e540  f={'3': 1, '4': 1, '5': 2, '6': 2, '7': 2, '8': 4} surprise=0.06 mode=narrow
+    - 8747da67f36e Allow pairwise intersections to be 0 or 2 mod 3 instead of only 2 mod  (not processed)
+  - ddcf9cc9bdf5  f={'3': 1, '4': 2, '5': 2, '6': 3, '7': 7, '8': 7} surprise=0.23 mode=narrow
+    - 35945664647f Allow pairwise intersections of size 0 or 2 instead of exactly 2, keep (not processed)
+  - c8daab22e0c1  f={'4': 2, '5': 2, '6': 2, '7': 2, '8': 2, '9': 2, '10': 2, '11': 2, '12': 2, '13': 3, '14': 3, '15': 3, '16': 4, '17': 4, '18': 4, '19': 4, '20': 4, '21': 4, '22': 4, '23': 4, '24': 4, '25': 4, '26': 4, '27': 4, '28': 5, '29': 4, '30': 5} surprise=4.51 mode=wide
+  - af2973665d5f  f={'4': 2, '5': 2, '6': 2, '7': 2, '8': 2, '9': 3, '10': 3, '11': 3, '12': 3, '13': 3, '14': 4, '15': 4, '16': 4, '17': 4, '18': 4, '19': 4, '20': 4, '21': 4, '22': 4, '23': 4, '24': 5, '25': 4, '26': 5, '27': 5, '28': 5, '29': 5, '30': 5} surprise=0.89 mode=narrow
+  - 296a3e322cd9  f={'3': 1, '4': 2, '5': 2, '6': 3, '7': 3, '8': 7} surprise=0.10 mode=narrow
+    - 9a19976f52c0 Pairwise intersections may be 0 or 1 mod 3 instead of only 0 mod 3, so (not processed)
+  - 91d5c47db43e  f={'3': 1, '4': 1, '5': 1, '6': 2, '7': 8, '8': 15} surprise=5.99 mode=wide
+    - 68828f89a648 Drop the lower bound on intersections to int_min=0, so intersections o (not processed)
+    - 7219c593eb2f Raise int_min to 3. For n<=8 the only intersection sizes allowed by th (not processed)
+    - 6866f22418e0 Also allow intersections congruent to 2 mod 5, which adds intersection (not processed)
+    - 36d794e331f9 Allow only intersections congruent to 0 mod 5, so for n<=8 every pair  (not processed)
+    - 9baefc049783 Require every set to have size exactly 6, so pairs must meet in exactl (not processed)
+  - 5083e7aeea57  f={'4': 1, '5': 2, '6': 2, '7': 2, '8': 3, '9': 3, '10': 3, '11': 3, '12': 3, '13': 3, '14': 3, '15': 3, '16': 3, '17': 4, '18': 4, '19': 4, '20': 4, '21': 4, '22': 5, '23': 5, '24': 4, '25': 5, '26': 5, '27': 5, '28': 5, '29': 6, '30': 6} surprise=4.43 mode=wide
+  - 1e3ac48efe4c  f={'4': 2, '5': 3, '6': 3, '7': 3, '8': 3, '9': 3, '10': 4, '11': 4, '12': 4, '13': 4, '14': 5, '15': 5, '16': 5, '17': 5, '18': 5, '19': 5, '20': 5, '21': 6, '22': 6, '23': 6, '24': 6, '25': 6, '26': 6, '27': 6, '28': 6, '29': 6, '30': 6} surprise=0.87 mode=narrow
+  - 41ecd66306bf  f={'4': 2, '5': 2, '6': 2, '7': 3, '8': 3, '9': 3, '10': 3, '11': 3, '12': 3, '13': 3, '14': 3, '15': 3, '16': 4, '17': 5, '18': 4, '19': 4, '20': 4, '21': 4, '22': 5, '23': 5, '24': 5, '25': 5, '26': 6, '27': 5, '28': 6, '29': 7, '30': 6} surprise=2.67 mode=wide
+    - eee3f34812e5 Work in the integers [1..n] with no wraparound instead of Z_n. (not processed)
+    - 93f362bec5e1 Replace x+2y=3z with the sum-free condition x+y=z in Z_n. (not processed)
+    - ac22d0c919ac Forbid ordinary 3-term progressions x+y=2z with x≠y instead of x+2y=3z (not processed)
+  - 723df1c45fec  f={'3': 3, '4': 4, '5': 5, '6': 6, '7': 8, '8': 15} surprise=0.45 mode=narrow
+  - 1c808da5e38a  (not processed)
+  - d1995211201c  (not processed)
+  - 0bebab214152  (not processed)
+  - 9dec376eec93  (not processed)
+  - dabd9607e503  (not processed)
+  - b54dba89b279  (not processed)
+  - 6c882222b31d  (not processed)
+  (25 mutations rejected, 0 refused as uncheckable)
