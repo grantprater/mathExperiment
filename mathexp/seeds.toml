@@ -28,10 +28,12 @@ known_as = ["Fisher's inequality", "Fisher inequality", "de Bruijn–Erdős", "d
 spec = { p = 2, int_abs = [1], ns = [3, 4, 5, 6, 7] }
 
 [[seed]]
-name = "fw_mod3_uniform"
+name = "fw_mod3"
 family = "setfam"
-known_as = ["Frankl–Wilson", "Frankl-Wilson", "modular Ray-Chaudhuri–Wilson", "Ray-Chaudhuri-Wilson"]
-spec = { p = 3, size_abs = [3], int_mod = [0], ns = [3, 4, 5, 6, 7] }
+known_as = ["Frankl–Wilson", "Frankl-Wilson", "Deza–Frankl–Singhi", "Deza-Frankl-Singhi", "modular Frankl–Wilson"]
+# Sizes avoid the allowed intersection residues (2 mod 3 vs {0, 1} mod 3), so the
+# modular Frankl–Wilson bound sum_{i<=2} C(n, i) applies.
+spec = { p = 3, size_mod = [2], int_mod = [0, 1], ns = [3, 4, 5, 6, 7] }
 
 [[seed]]
 name = "cap_set"
