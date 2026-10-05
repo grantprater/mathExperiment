@@ -67,11 +67,53 @@ The loop turns the owner's account of intuition into operations:
 
   All metrics are reported separately for named and variant problems, because named
   results are memorised.
+- **Surprising**: a problem is surprising if, for some n,
+  |log2((pred + 1) / (f + 1))| ≥ 1, that is, some small case was off by a factor of 2
+  or more. This threshold is a constant in code, not a flag.
+- **Prior bridges** of a problem, in order of preference:
+  1. the bridges behind its parent's wins;
+  2. failing that, the family's top 2 bridges by importance so far;
+  3. failing that, the model's own choice.
 - **Calibration domain**: (family, prediction kind, model). The metrics are:
   - 80% interval coverage;
   - median |log2 ratio| for value predictions;
   - Brier score for probability predictions, such as P(bound holds) and predicted
     mutation effects.
+
+## Prediction store (design borrowed from ~/reticle)
+
+Reticle's ledger (`~/reticle-store/notes/predictions.jsonl`) taught four things:
+- **One flat row per claim, with a numeric confidence on every row.** Reticle's
+  pre-registered rows have prose outcomes and no confidence, so they cannot be scored.
+- **Record that the prediction came before the look, and enforce it in code.** Reticle's
+  conversion audit: "every convention that was merely written down got violated again...
+  every one encoded as code that refuses held."
+- **Calibration is a gap.** Per domain, compute accuracy minus mean stated confidence.
+  Add a runs test and a Bonferroni-corrected change-point test.
+- **Split by level** (value / mechanism / ontology). Reticle's most expensive claims were
+  also its most overconfident.
+
+This experiment adds:
+- a Brier score;
+- outcomes joined to predictions by id, not by free text;
+- arm A2, which feeds calibration back into the prompt automatically. Reticle only
+  reports calibration.
+
+Every prediction is a binary claim with a confidence. The kinds are:
+
+| kind | claim | confidence | level |
+|---|---|---|---|
+| `interval` | f(n) ∈ [lo, hi] (the point estimate is kept for log error) | 0.8 | value |
+| `bound_holds` | g(n) ≥ f(n) for every computed n | the model's P | mechanism |
+| `mutation_effect` | at the largest n both problems computed, the child's f is larger than, equal to, or smaller than the parent's | the model's P | mechanism |
+| `recognition` | this problem is the named result X | the model's P | ontology |
+
+Recognition is scored only for named seeds; for variants it is scored `couldnt-tell`.
+
+Prediction rows are appended with `outcome: null`. An outcome row
+`{kind: "outcome", ref: <id>, outcome: right | wrong | couldnt-tell, observed}` is
+appended after the computation. The loop refuses to compute f for a problem until its
+interval predictions have been written.
 
 ## Arms
 
@@ -85,6 +127,28 @@ number of LLM calls.
   predictions.
 - **A3, bridge menu**: weaving from the bridge and lemma menus versus a free-form "find
   an upper bound" prompt. Measures: wins and the violated rate.
+
+- **A4, breadth: "assume the prior, widen the search on surprise".** This is a principle
+  from reticle.
+  - *Fixed* breadth: k = 3 bounds from the full menu and m = 3 mutations for every
+    problem.
+  - *Adaptive* breadth:
+    - an unsurprising problem gets k = 1 bound from its prior bridges and m = 1 mutation;
+    - a problem that is surprising, or whose narrow weave produced no win (the prior
+      failed), gets k = 5 bounds from the full menu, at least 3 of them outside the
+      prior, and m = 5 mutations.
+
+  Measures:
+  - wins per 100 calls;
+  - how often the prior held on unsurprising problems (if it almost always holds,
+    narrowing costs nothing);
+  - the principle's own claim: wins from bridges outside the prior are concentrated on
+    surprising problems.
+
+  The principle's claim is tested in the fixed arm, because there every problem gets the
+  full menu. That makes P(non-prior win | surprising) versus
+  P(non-prior win | unsurprising) an unbiased comparison. The adaptive arm then tests
+  whether acting on the principle saves calls.
 
 ## Known limits
 
