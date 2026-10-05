@@ -115,7 +115,7 @@ def main(argv=None) -> int:
     r.add_argument("--bridges-per-problem", type=int, default=None, help="fixed breadth only (default 3)")
     r.add_argument("--mutations-per-problem", type=int, default=None, help="fixed breadth only (default 3)")
     r.add_argument("--max-calls", type=int, default=30)
-    r.add_argument("--max-problems", type=int, default=10)
+    r.add_argument("--max-problems", type=int, default=None, help="default: no cap; --max-calls ends the run")
     r.add_argument("--seeds", default="all", help="'all' or comma-separated seed names")
     r.add_argument("--store", default=None, help="default: store/ (mock: scratch/store-mock/)")
     r.add_argument("--run-id", default="auto")

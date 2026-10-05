@@ -94,7 +94,7 @@ class Config:
     k_fixed: int = 3
     m_fixed: int = 3
     max_calls: int = 30
-    max_problems: int = 10
+    max_problems: int | None = None
     seeds: list[str] | None = None
     run_id: str = "auto"
     seed: int = 0
@@ -191,7 +191,7 @@ class Loop:
     def run_loop(self) -> dict:
         self.seed_frontier()
         done = 0
-        while self.frontier and done < self.cfg.max_problems and self.budget_left() > 0:
+        while self.frontier and (self.cfg.max_problems is None or done < self.cfg.max_problems) and self.budget_left() > 0:
             item = heapq.heappop(self.frontier).data
             self.log(f"problem {item['id']} ({item.get('seed_name') or item['provenance']}): "
                      f"{item['family']} {json.dumps({k: v for k, v in item['spec'].items() if k != 'ns'})}")
