@@ -428,3 +428,41 @@ problem 7ef949417b53 (variant): setfam {"p": 5, "size_mod": [2, 3], "int_mod": n
   weave[3/wide3] double_counting+pigeonhole: g = 'comb(n,2)+comb(n,3)+comb(n,7)+comb(n,8)' -> consistent tight_at=[3]
 problem 35a8f159d25e (variant): setfam {"p": 5, "size_mod": [2, 3], "int_mod": null, "size_abs": null, "int_abs": [1, 2, 3], "int_min": null}
   f = {3: 4, 4: 7, 5: 10, 6: 15, 7: 22, 8: 29}  surprise mean=0.27 bits max=0.47 bits
+  weave[1/probe] incidence_matrix+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 3)' -> consistent tight_at=[]
+  weave[2/probe] incidence_matrix+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 3)' -> consistent tight_at=[]
+  weave[3/wide3] double_counting+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 4)' -> consistent tight_at=[]
+problem de8550df3c07 (variant): setfam {"p": 5, "size_mod": [2], "int_mod": null, "size_abs": null, "int_abs": [1, 2], "int_min": null}
+  f = {3: 3, 4: 3, 5: 4, 6: 5, 7: 7, 8: 8}  surprise mean=0.05 bits max=0.06 bits
+  weave[1/probe] incidence_matrix+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 2)' -> consistent tight_at=[]
+  weave[2/probe] incidence_matrix+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 2) + n' -> consistent tight_at=[]
+  weave[3/wide3] double_counting+pigeonhole: g = 'max(n-1,3)+1' -> consistent WIN tight_at=[7, 8]
+  weave[3/wide3] double_counting+pigeonhole: g = 'comb(n,2)+comb(n,7)' -> consistent tight_at=[3]
+problem 1ea123391598 (variant): setfam {"p": 3, "size_mod": [1], "int_mod": [0]}
+  f = {3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8}  surprise mean=0.17 bits max=0.47 bits
+  weave[1/probe] charvec_fp+gram_rank: g = 'n' -> consistent WIN tight_at=[3, 4, 5, 6, 7, 8]
+  weave[2/probe] charvec_fp+gram_rank: g = 'n' -> consistent WIN tight_at=[3, 4, 5, 6, 7, 8]
+  weave[3/wide3] graph_spectrum+gram_rank: g = 'n' -> consistent WIN tight_at=[3, 4, 5, 6, 7, 8]
+  weave[3/wide3] slice_rank+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 1)' -> consistent WIN tight_at=[]
+problem e53fc3cef1ce (variant): setfam {"p": 5, "size_mod": [1], "int_mod": [0], "int_min": 6}
+  f = {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1}  surprise mean=0.04 bits max=0.04 bits
+  weave[1/probe] charvec_fp+gram_rank: g = 'n' -> consistent WIN tight_at=[]
+  weave[2/probe] charvec_fp+gram_rank: g = 'n' -> consistent WIN tight_at=[]
+  weave[3/wide3] graph_spectrum+gram_rank: g = 'n' -> consistent WIN tight_at=[]
+  weave[3/wide3] fourier_indicator+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 1)' -> consistent WIN tight_at=[]
+problem fc813f837060 (variant): setfam {"p": 5, "size_mod": [1], "int_mod": [0], "int_min": 5}
+  f = {3: 1, 4: 1, 5: 1, 6: 1, 7: 7, 8: 7}  surprise mean=0.07 bits max=0.1 bits
+  weave[1/probe] charvec_fp+gram_rank: g = 'n' -> consistent WIN tight_at=[7]
+  weave[2/probe] charvec_fp+gram_rank: g = 'n' -> consistent WIN tight_at=[7]
+  weave[3/wide3] double_counting+gram_rank: g = 'n' -> consistent WIN tight_at=[7]
+  weave[3/wide3] fourier_indicator+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 1)' -> consistent WIN tight_at=[]
+problem 820a273b818d (variant): setfam {"p": 5, "size_mod": [3], "int_abs": [0, 1, 2]}
+  f = {3: 1, 4: 4, 5: 10, 6: 20, 7: 35, 8: 56}  surprise mean=0.03 bits max=0.04 bits
+  weave[1/probe] incidence_matrix+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 3)' -> consistent tight_at=[]
+  weave[2/probe] incidence_matrix+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 3)' -> consistent tight_at=[]
+  weave[3/wide3] slice_rank+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 3)' -> consistent tight_at=[]
+problem 7eadb2495056 (variant): setfam {"p": 5, "size_mod": [2, 3], "int_mod": null, "size_abs": null, "int_abs": [1, 2, 3, 4], "int_min": null}
+  f = {3: 4, 4: 7, 5: 10, 6: 15, 7: 22, 8: 29}  surprise mean=0.23 bits max=0.42 bits
+  weave[1/probe] incidence_matrix+multilinear_dim+diagonal_criterion: g = 'binom_sum(n,4)+comb(n,2)+comb(n,3)' -> consistent tight_at=[]
+  weave[2/probe] incidence_matrix+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 4) + comb(n, 2) + comb(n, 3)' -> consistent tight_at=[]
+  weave[3/wide3] graph_spectrum+pigeonhole: g = 'comb(n,2)+comb(n,3)+comb(n,7)+comb(n,8)' -> consistent tight_at=[3]
+problem 5d764386ed41 (variant): setfam {"p": 5, "size_mod": [2, 3, 4], "int_mod": null, "size_abs": null, "int_abs": [1, 2, 3, 4], "int_min": null}
