@@ -1,0 +1,139 @@
+problem 436287e53b6f (oddtown): setfam {"p": 2, "size_mod": [1], "int_mod": [0]}
+  f = {3: 3, 4: 4, 5: 5, 6: 6, 7: 7}  surprise mean=0.0 max=0.0
+  weave[1/narrow] charvec_fp+gram_rank: g = 'n' -> consistent WIN tight_at=[3, 4, 5, 6, 7]
+problem 9ed7dee11106 (eventown): setfam {"p": 2, "size_mod": [0], "int_mod": [0]}
+  f = {3: 2, 4: 4, 5: 4, 6: 8, 7: 8}  surprise mean=0.0 max=0.0
+  weave[1/narrow] charvec_fp+self_orthogonal: g = '2**floor(n/2)' -> consistent WIN tight_at=[3, 4, 5, 6, 7]
+problem b3128e808e36 (reverse_oddtown): setfam {"p": 2, "size_mod": [0], "int_mod": [1]}
+  f = {3: 3, 4: 3, 5: 5, 6: 5, 7: 7}  surprise mean=0.0 max=0.0
+  weave[1/narrow] charvec_fp+gram_rank: g = 'n + 1 - n % 2' -> consistent WIN tight_at=[3, 5, 7]
+problem 60ba88b02573 (fisher_one): setfam {"p": 2, "int_abs": [1]}
+  f = {3: 3, 4: 4, 5: 5, 6: 6, 7: 7}  surprise mean=0.0 max=0.0
+  weave[1/narrow] charvec_fp+gram_rank+fisher: g = 'n' -> consistent WIN tight_at=[3, 4, 5, 6, 7]
+problem 9a19976f52c0 (fw_mod3): setfam {"p": 3, "size_mod": [2], "int_mod": [0, 1]}
+  f = {3: 3, 4: 6, 5: 10, 6: 15, 7: 21}  surprise mean=0.0 max=0.0
+  weave[1/narrow] charvec_fp+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[]
+problem 5844ffafe50d (cap_set): addfree {"group": "fpk", "p": 3, "equation": "3ap"}
+  f = {1: 2, 2: 4, 3: 9}  surprise mean=0.0 max=0.0
+  weave[1/narrow] slice_rank+slice_rank_diagonal+slice_rank_capset: g = '3**(n+1)' -> consistent tight_at=[]
+  narrow weave found no win: the prior failed, escalating to wide
+  weave[2/wide] slice_rank+slice_rank_diagonal+slice_rank_capset: g = '3*2.756**n' -> consistent tight_at=[]
+  weave[2/wide] orbit_averaging+pigeonhole: g = '2*3**(n-1)' -> consistent WIN tight_at=[1]
+  weave[2/wide] fourier_indicator+parseval: g = '3**n' -> consistent tight_at=[]
+  weave[2/wide] slice_rank+slice_rank_diagonal+slice_rank_general_equation: g = '3*2.756**n' -> consistent tight_at=[]
+problem 93f362bec5e1 (sumfree_cyclic): addfree {"group": "cyclic", "p": 3, "equation": "sumfree"}
+  f = {4: 2, 5: 2, 6: 3, 7: 2, 8: 4, 9: 3, 10: 5, 11: 4, 12: 6, 13: 4, 14: 7, 15: 6, 16: 8, 17: 6, 18: 9, 19: 6, 20: 10}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+disjoint_translates+pigeonhole: g = 'n//2' -> consistent WIN tight_at=[4, 5, 6, 8, 10, 12, 14, 16, 18, 20]
+problem 12f857ca1fa0 (salem_spencer): addfree {"group": "int", "p": 3, "equation": "3ap"}
+  f = {4: 3, 5: 4, 6: 4, 7: 4, 8: 4, 9: 5, 10: 5, 11: 6, 12: 6, 13: 7, 14: 8, 15: 8, 16: 8, 17: 8, 18: 8, 19: 8, 20: 9}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+pigeonhole: g = 'min(n, 5*ceil(n/9))' -> consistent WIN tight_at=[9]
+problem f7cb64d70afa (sidon_int): addfree {"group": "int", "p": 3, "equation": "sidon"}
+  f = {4: 3, 5: 3, 6: 3, 7: 4, 8: 4, 9: 4, 10: 4, 11: 4, 12: 5, 13: 5, 14: 5, 15: 5, 16: 5, 17: 5, 18: 6, 19: 6, 20: 6}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+sidon_counting: g = 'floor((1+sqrt(8*n-7))/2)' -> consistent WIN tight_at=[4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 18, 19, 20]
+problem 69f0da3ee9f8 (variant): setfam {"p": 2, "int_abs": [0, 1]}
+  f = {3: 7, 4: 11, 5: 16, 6: 22, 7: 29}  surprise mean=0.0 max=0.0
+  weave[1/narrow] charvec_fp+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[3, 4, 5, 6, 7]
+problem 296a3e322cd9 (variant): setfam {"p": 3, "size_mod": [2], "int_mod": [0]}
+  f = {3: 1, 4: 2, 5: 2, 6: 3, 7: 3}  surprise mean=0.0 max=0.0
+  weave[1/narrow] charvec_fp+gram_rank: g = 'n' -> consistent WIN tight_at=[]
+problem 6d6e66149695 (variant): addfree {"group": "fpk", "p": 5, "equation": "3ap"}
+  f = {1: 2, 2: 6}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+pigeonhole: g = '2*5**(n-1)' -> insufficient tight_at=[1]
+  narrow weave found no win: the prior failed, escalating to wide
+  weave[2/wide] slice_rank+slice_rank_diagonal+slice_rank_general_equation: g = 'min(5**n, 3*(2+4*(n-1)))' -> insufficient tight_at=[]
+  weave[2/wide] translates+pigeonhole: g = '2*5**(n-1)' -> insufficient tight_at=[1]
+  weave[2/wide] orbit_averaging+pigeonhole: g = '2*5**(n-1)' -> insufficient tight_at=[1]
+  weave[2/wide] double_counting+pigeonhole: g = '2*5**(n-1)' -> insufficient tight_at=[1]
+problem fa59ca37f533 (variant): addfree {"group": "fpk", "p": 2, "equation": "3ap"}
+  f = {1: 2, 2: 4, 3: 8, 4: 16}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+pigeonhole: g = '2**n' -> consistent tight_at=[1, 2, 3, 4]
+  narrow weave found no win: the prior failed, escalating to wide
+  weave[2/wide] fourier_indicator+parseval: g = '2**n' -> consistent tight_at=[1, 2, 3, 4]
+  weave[2/wide] graph_spectrum+lovasz_theta: g = '2**n' -> consistent tight_at=[1, 2, 3, 4]
+  weave[2/wide] double_counting+pigeonhole: g = '2**n' -> consistent tight_at=[1, 2, 3, 4]
+  weave[2/wide] orbit_averaging+pigeonhole: g = '2**n' -> consistent tight_at=[1, 2, 3, 4]
+problem 65a24109f87d (variant): addfree {"group": "fpk", "p": 3, "equation": "sumfree"}
+  f = {1: 1, 2: 3, 3: 9}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+pigeonhole: g = '3**(n-1)' -> consistent WIN tight_at=[1, 2, 3]
+problem 63620c9dfcc4 (variant): addfree {"group": "fpk", "p": 3, "equation": "sidon"}
+  f = {1: 2, 2: 3, 3: 5}  surprise mean=0.181 max=0.322
+  weave[1/narrow] orbit_averaging+sidon_counting+pigeonhole: g = 'floor((-1 + sqrt(1 + 8*3**n))/2)' -> consistent WIN tight_at=[1, 2]
+problem 19dd32f36e91 (variant): addfree {"group": "fpk", "p": 3, "equation": {"a": 1, "b": 1, "c": 2}}
+  f = {1: 2, 2: 4, 3: 9}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+pigeonhole: g = '2*3**(n-1)' -> consistent WIN tight_at=[1]
+problem ac22d0c919ac (variant): addfree {"group": "cyclic", "p": 3, "equation": "3ap"}
+  f = {4: 2, 5: 2, 6: 4, 7: 3, 8: 4, 9: 4, 10: 4, 11: 4, 12: 4, 13: 4, 14: 6, 15: 4, 16: 6, 17: 5, 18: 8, 19: 6, 20: 8}  surprise mean=0.158 max=0.485
+  weave[1/narrow] orbit_averaging+pigeonhole: g = 'floor(2*n/3)' -> consistent WIN tight_at=[4, 6]
+problem 07241a27b0fe (variant): addfree {"group": "int", "p": 3, "equation": "sumfree"}
+  f = {4: 2, 5: 3, 6: 3, 7: 4, 8: 4, 9: 5, 10: 5, 11: 6, 12: 6, 13: 7, 14: 7, 15: 8, 16: 8, 17: 9, 18: 9, 19: 10, 20: 10}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+pigeonhole+disjoint_translates: g = '(n+1)//2' -> consistent WIN tight_at=[4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+problem 2a076338bdcd (variant): addfree {"group": "cyclic", "p": 3, "equation": "sidon"}
+  f = {4: 2, 5: 2, 6: 2, 7: 3, 8: 3, 9: 3, 10: 3, 11: 3, 12: 3, 13: 4, 14: 4, 15: 4, 16: 4, 17: 4, 18: 4, 19: 4, 20: 4}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+pigeonhole: g = 'floor((1+sqrt(4*n-3))/2)' -> consistent WIN tight_at=[4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+problem 60faa442a2cf (variant): setfam {"p": 2, "int_abs": [0, 1, 2]}
+  f = {3: 8, 4: 15, 5: 26, 6: 42, 7: 64}  surprise mean=0.0 max=0.0
+  weave[1/narrow] charvec_fp+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 3)' -> consistent WIN tight_at=[3, 4, 5, 6, 7]
+problem 65795a515fcb (variant): addfree {"group": "fpk", "p": 7, "equation": "3ap"}
+  f = {1: 3}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+pigeonhole: g = '3*7**(n-1)' -> insufficient tight_at=[1]
+  narrow weave found no win: the prior failed, escalating to wide
+  weave[2/wide] slice_rank+slice_rank_general_equation+slice_rank_diagonal: g = '3*6.2**n' -> insufficient tight_at=[]
+  weave[2/wide] slice_rank+slice_rank_general_equation: g = 'min(7**n, 3*6.2**n)' -> insufficient tight_at=[]
+problem 1b6a9053b316 (variant): addfree {"group": "fpk", "p": 5, "equation": "sumfree"}
+  f = {1: 2, 2: 10}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+pigeonhole: g = '(5**n - 1)//2' -> insufficient tight_at=[1]
+  narrow weave found no win: the prior failed, escalating to wide
+  weave[2/wide] translates+disjoint_translates: g = 'floor(5**n/2)' -> insufficient tight_at=[1]
+  weave[2/wide] double_counting+pigeonhole: g = '(5**n-1)//2' -> insufficient tight_at=[1]
+  weave[2/wide] graph_spectrum+pigeonhole: g = '5**n-1' -> insufficient tight_at=[]
+  weave[2/wide] fourier_indicator+parseval: g = '2*5**(n-1)' -> insufficient tight_at=[1, 2]
+problem ea78b31e7ee1 (variant): addfree {"group": "fpk", "p": 5, "equation": "sidon"}
+  f = {1: 2, 2: 5}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+cauchy_schwarz+pigeonhole: g = 'floor((1+sqrt(4*5**n-3))/2)' -> insufficient tight_at=[1, 2]
+  narrow weave found no win: the prior failed, escalating to wide
+  weave[2/wide] double_counting+sidon_counting+pigeonhole: g = 'floor((1+sqrt(4*5**n-3))/2)' -> insufficient tight_at=[1, 2]
+  weave[2/wide] double_counting+sidon_counting: g = 'floor((sqrt(1+8*5**n)-1)/2)' -> insufficient tight_at=[1]
+  weave[2/wide] fourier_indicator+parseval+cauchy_schwarz: g = 'sqrt(2*5**n)' -> insufficient tight_at=[]
+problem f0826f82acbc (variant): addfree {"group": "fpk", "p": 5, "equation": {"a": 1, "b": 1, "c": 2}}
+  f = {1: 2, 2: 6}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+pigeonhole: g = '2*5**(n-1)' -> insufficient tight_at=[1]
+  narrow weave found no win: the prior failed, escalating to wide
+  weave[2/wide] translates+disjoint_translates: g = '(5**n+1)/2' -> insufficient tight_at=[]
+  weave[2/wide] slice_rank+slice_rank_general_equation+slice_rank_diagonal: g = 'min(5**n, 3*comb(n+floor(4*n/3), n))' -> insufficient tight_at=[]
+  weave[2/wide] double_counting+pigeonhole: g = '(-(5**n-2)+sqrt((5**n-2)**2+4*5**n*(5**n-1)))/2' -> insufficient tight_at=[]
+problem cfa3f9be9298 (variant): addfree {"group": "fpk", "p": 2, "equation": "sumfree"}
+  f = {1: 1, 2: 2, 3: 4, 4: 8}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+disjoint_translates: g = '2**(n-1)' -> consistent WIN tight_at=[1, 2, 3, 4]
+problem 7635b7118f66 (variant): addfree {"group": "fpk", "p": 2, "equation": "sidon"}
+  f = {1: 1, 2: 1, 3: 1, 4: 1}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+pigeonhole: g = '1' -> consistent WIN tight_at=[1, 2, 3, 4]
+problem 794cce47b9b2 (variant): addfree {"group": "fpk", "p": 7, "equation": "sumfree"}
+  f = {1: 2}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+disjoint_translates: g = '7**n/2' -> insufficient tight_at=[]
+  narrow weave found no win: the prior failed, escalating to wide
+  weave[2/wide] translates+disjoint_translates: g = 'floor(7**n/2)' -> insufficient tight_at=[]
+  weave[2/wide] orbit_averaging+pigeonhole: g = '(7**n-1)/3' -> insufficient tight_at=[1]
+  weave[2/wide] fourier_indicator+parseval: g = '7**n-1' -> insufficient tight_at=[]
+problem 0b4fc9264661 (variant): addfree {"group": "fpk", "p": 7, "equation": "sidon"}
+  f = {1: 3}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+pigeonhole: g = 'min(3*7**(n-1), floor((sqrt(8*7**n+1)-1)/2))' -> insufficient tight_at=[1]
+  narrow weave found no win: the prior failed, escalating to wide
+  weave[2/wide] double_counting+sidon_counting: g = 'floor((1+sqrt(4*7**n-3))/2)' -> insufficient tight_at=[1]
+  weave[2/wide] double_counting+sidon_counting: g = 'floor((sqrt(8*7**n+1)-1)/2)' -> insufficient tight_at=[1]
+  weave[2/wide] fourier_indicator+parseval+cauchy_schwarz: g = 'sqrt(2*7**n)' -> insufficient tight_at=[1]
+problem 743ef95921bd (variant): addfree {"group": "fpk", "p": 7, "equation": {"a": 1, "b": 1, "c": 2}}
+  f = {1: 3}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+pigeonhole: g = '3*7**(n-1)' -> insufficient tight_at=[1]
+  narrow weave found no win: the prior failed, escalating to wide
+  weave[2/wide] slice_rank+slice_rank_general_equation+slice_rank_diagonal: g = '3*((1+0.8+0.8**2+0.8**3+0.8**4+0.8**5+0.8**6)/0.8**2)**n' -> insufficient tight_at=[]
+  weave[2/wide] translates+disjoint_translates: g = '(7**n+1)/2' -> insufficient tight_at=[]
+  weave[2/wide] fourier_indicator+parseval: g = '7**n' -> insufficient tight_at=[]
+problem 57a00f006466 (variant): addfree {"group": "fpk", "p": 5, "equation": {"a": 1, "b": 1, "c": 1}}
+  f = {1: 2, 2: 10}  surprise mean=0.0 max=0.0
+  weave[1/narrow] orbit_averaging+pigeonhole: g = '(5**n - 1)/2' -> insufficient tight_at=[1]
+  narrow weave found no win: the prior failed, escalating to wide
+  weave[2/wide] translates+disjoint_translates: g = 'floor(5**n/2)' -> insufficient tight_at=[1]
+  weave[2/wide] double_counting+pigeonhole: g = 'max(1, (5**n-1)//2)' -> insufficient tight_at=[1]
+  weave[2/wide] double_counting+cauchy_schwarz: g = 'floor(5**n/2)' -> insufficient tight_at=[1]
+run a4-adaptive-2: 30 problems, 100 calls, store store\a4-adaptive
+{"run": "a4-adaptive-2", "problems": 30, "calls": 100}

@@ -1,0 +1,115 @@
+store store\a4-fixed  (all runs)
+34 problems processed, 59 weaves, 100 calls (100 parsed)
+
+== Calibration (domain x kind x level x model) ==
+domain   kind             level     model                   n  scr   acc  conf    gap  brier  cov80  medlog2  runs z  chg p
+addfree  bound_holds      mechanism claude-sonnet-5-5      17   15  1.00  0.96  +0.04  0.004     --       --      --   1.00
+addfree  interval         value     claude-sonnet-5-5     114  114  0.98  0.80  +0.18  0.051   0.98    +0.00   +0.22   1.00
+addfree  mutation_effect  mechanism claude-sonnet-5-5      12    6  1.00  0.90  +0.10  0.012     --       --      --     --
+addfree  recognition      ontology  claude-sonnet-5-5       9    4  0.75  0.94  -0.19  0.220     --       --   +1.00     --
+setfam   bound_holds      mechanism claude-sonnet-5-5      42   42  1.00  0.95  +0.05  0.007     --       --      --   1.00
+setfam   interval         value     claude-sonnet-5-5     120  120  1.00  0.80  +0.20  0.040   1.00    +0.00      --   1.00
+setfam   mutation_effect  mechanism claude-sonnet-5-5      40   19  0.89  0.82  +0.08  0.078     --       --   -2.20   0.58
+setfam   recognition      ontology  claude-sonnet-5-5      14    4  1.00  0.80  +0.20  0.056     --       --      --     --
+
+== Top surprises (mean |log2((pred+1)/(f+1))|) ==
+  0.07 (max 0.49) ac22d0c919ac variant  f={'4': 2, '5': 2, '6': 4, '7': 3, '8': 4, '9': 4, '10': 4, '11': 4, '12': 4, '13': 4, '14': 6, '15': 4, '16': 6, '17': 5, '18': 8, '19': 6, '20': 8}
+  0.05 (max 0.26) bc4274c82fcd variant  f={'3': 2, '4': 2, '5': 4, '6': 4, '7': 8}
+  0.04 (max 0.19) 3646492cfd52 variant  f={'3': 3, '4': 3, '5': 5, '6': 5, '7': 7}
+  0.00 (max 0.00) 436287e53b6f named   oddtown f={'3': 3, '4': 4, '5': 5, '6': 6, '7': 7}
+  0.00 (max 0.00) 9ed7dee11106 named   eventown f={'3': 2, '4': 4, '5': 4, '6': 8, '7': 8}
+  0.00 (max 0.00) b3128e808e36 named   reverse_oddtown f={'3': 3, '4': 3, '5': 5, '6': 5, '7': 7}
+  0.00 (max 0.00) 60ba88b02573 named   fisher_one f={'3': 3, '4': 4, '5': 5, '6': 6, '7': 7}
+  0.00 (max 0.00) 9a19976f52c0 named   fw_mod3 f={'3': 3, '4': 6, '5': 10, '6': 15, '7': 21}
+
+== Weave status counts ==
+  named    n=16   consistent=16 violated=0 insufficient=0 error=0  wins=15  with_tight=11
+  variant  n=43   consistent=41 violated=0 insufficient=2 error=0  wins=37  with_tight=22
+
+== Reuse / importance of (bridge, lemma) pairs (wins only) ==
+  multilinear_poly     diagonal_criterion         families=1 problems=14 (named 3, variant 11) best g/trivial=0.062
+  multilinear_poly     multilinear_dim            families=1 problems=14 (named 3, variant 11) best g/trivial=0.062
+  incidence_matrix     gram_rank                  families=1 problems=7 (named 4, variant 3) best g/trivial=0.055
+  charvec_fp           gram_rank                  families=1 problems=6 (named 1, variant 5) best g/trivial=0.125
+  charvec_fp           self_orthogonal            families=1 problems=6 (named 1, variant 5) best g/trivial=0.117
+  incidence_matrix     fisher                     families=1 problems=5 (named 1, variant 4) best g/trivial=0.055
+  charvec_fp           dim_independent            families=1 problems=4 (named 1, variant 3) best g/trivial=0.109
+  double_counting      pigeonhole                 families=1 problems=3 (named 0, variant 3) best g/trivial=0.062
+  double_counting      sidon_counting             families=1 problems=3 (named 1, variant 4) best g/trivial=0.185
+  incidence_matrix     dim_independent            families=1 problems=2 (named 2, variant 0) best g/trivial=0.109
+  translates           disjoint_translates        families=1 problems=2 (named 1, variant 1) best g/trivial=0.500
+  translates           pigeonhole                 families=1 problems=2 (named 1, variant 1) best g/trivial=0.550
+  charvec_fp           diagonal_criterion         families=1 problems=1 (named 0, variant 1) best g/trivial=0.125
+  charvec_fp           multilinear_dim            families=1 problems=1 (named 0, variant 1) best g/trivial=0.125
+  double_counting      cauchy_schwarz             families=1 problems=1 (named 0, variant 1) best g/trivial=0.185
+
+== A4: assume the prior, widen on surprise ==
+  fixed     wins per 100 calls: 52.0  (52 wins / 100 calls, 1 runs)
+  adaptive, unsurprising (narrow): prior held 0/0  (escalated 0)
+  fixed breadth: problems with a win from a bridge outside the prior
+    surprising    0/0
+    unsurprising  14/34 = 41%
+
+== What-if tree ==
+  - 436287e53b6f oddtown f={'3': 3, '4': 4, '5': 5, '6': 6, '7': 7} surprise=0.00 mode=fixed
+    - 672aafca1461 Drop the size condition and keep only the condition that distinct memb f={'3': 4, '4': 5, '5': 6, '6': 8, '7': 9} surprise=0.00 mode=fixed
+      - 07db0d4e2308 Require distinct members to have odd pairwise intersections instead of f={'3': 3, '4': 4, '5': 5, '6': 6, '7': 8} surprise=0.00 mode=fixed
+      - 9e040d35d3d7 Require every member to have size exactly 2, so the family must be a m f={'3': 1, '4': 2, '5': 2, '6': 3, '7': 3} surprise=0.00 mode=fixed
+        - 1dc259481172 Require pairwise intersections to be odd (exactly 1) instead of even,  (not processed)
+        - fd1268a7b323 Use 3-element sets with pairwise even intersections (0 or 2). A sunflo (not processed)
+        - 01115b1c4fdf Use 4-element sets with pairwise even intersections (0 or 2). The Fano (not processed)
+    - f4c966bb1b37 Require odd pairwise intersections instead of even ones, with sizes st f={'3': 2, '4': 2, '5': 4, '6': 4, '7': 8} surprise=0.00 mode=fixed
+  - 9ed7dee11106 eventown f={'3': 2, '4': 4, '5': 4, '6': 8, '7': 8} surprise=0.00 mode=fixed
+  - b3128e808e36 reverse_oddtown f={'3': 3, '4': 3, '5': 5, '6': 5, '7': 7} surprise=0.00 mode=fixed
+    - 3646492cfd52 Distinct members must meet in exactly one element, while sizes stay ev f={'3': 3, '4': 3, '5': 5, '6': 5, '7': 7} surprise=0.04 mode=fixed
+      - d532ff234bec Require odd set sizes instead of even sizes, with pairwise intersectio f={'3': 2, '4': 2, '5': 3, '6': 4, '7': 7} surprise=0.00 mode=fixed
+        - bc4274c82fcd Allow pairwise intersections of size 1 or 3 instead of exactly 1. f={'3': 2, '4': 2, '5': 4, '6': 4, '7': 8} surprise=0.05 mode=fixed
+          - fecdac1042a8 Require even-size sets with odd pairwise intersections of size 1 or 3. f={'3': 3, '4': 3, '5': 5, '6': 5, '7': 7} surprise=0.00 mode=fixed
+        - 0cfca9559661 Drop the odd-size condition, so members of any size must pairwise meet f={'3': 3, '4': 4, '5': 5, '6': 6, '7': 7} surprise=0.00 mode=fixed
+          - b63915712d92 Force all sets to have size exactly 2, so the family is a graph whose  (not processed)
+      - 4e8f2af0a574 Require pairwise intersections of size exactly 3 instead of exactly 1. f={'3': 1, '4': 1, '5': 5, '6': 5, '7': 5} surprise=0.00 mode=fixed
+        - 7527922abedf Allow pairwise intersections of size 3 or 5 (both odd). The 7 compleme f={'3': 1, '4': 1, '5': 5, '6': 5, '7': 7} surprise=0.00 mode=fixed
+          - b24ab2fc1d4a Intersection size 7 is also allowed. (not processed)
+          - 3c57307d4c16 The even-size condition on members is removed, so odd-size sets are al (not processed)
+  - 60ba88b02573 fisher_one f={'3': 3, '4': 4, '5': 5, '6': 6, '7': 7} surprise=0.00 mode=fixed
+    - 69f0da3ee9f8 Allow pairwise intersections of size 0 or 1, so the family is a partia f={'3': 7, '4': 11, '5': 16, '6': 22, '7': 29} surprise=0.00 mode=fixed
+      - c45a5190111e Require pairwise intersections to be exactly 0, so the members are pai f={'3': 4, '4': 5, '5': 6, '6': 7, '7': 8} surprise=0.00 mode=fixed
+        - 0e61a060094d Require every member to be a 2-set, with pairwise disjointness kept, s (not processed)
+      - fb18f2609f8c Restrict every member to have size exactly 3, giving a linear 3-unifor f={'3': 1, '4': 1, '5': 2, '6': 4, '7': 7} surprise=0.00 mode=fixed
+      - 60faa442a2cf Allow pairwise intersections of size 0, 1 or 2. (not processed)
+    - 9a765405759b Require pairwise intersections of size exactly 2 instead of 1. f={'3': 2, '4': 4, '5': 4, '6': 5, '7': 7} surprise=0.00 mode=fixed
+      - 80c54cdc80e4 Allow pairwise intersections of size 2 or 3 instead of exactly 2. (not processed)
+      - abbf208669c0 Require every member to be a 3-set, so the family is a uniform one wit (not processed)
+      - 42d67466187a Require every member to be a 4-set, so the family is a uniform one wit (not processed)
+    - c552466a9bf5 Allow pairwise intersections of size 1 or 2. f={'3': 4, '4': 7, '5': 11, '6': 16, '7': 22} surprise=0.00 mode=fixed
+      - 31b484cd6ee1 Allow pairwise intersections of size 1, 2 or 3 instead of only 1 or 2. (not processed)
+      - ccb25c7f0c69 Require every member to be a 3-set, keeping pairwise intersections in  (not processed)
+  - 9a19976f52c0 fw_mod3 f={'3': 3, '4': 6, '5': 10, '6': 15, '7': 21} surprise=0.00 mode=fixed
+    - 6dcd8a523823 Allow sizes 1 or 2 mod 3, so singletons can be added to the 2-sets. f={'3': 6, '4': 10, '5': 15, '6': 21, '7': 28} surprise=0.00 mode=fixed
+      - 95d74f8b6ffd Drop the size restriction, so sets of any size are allowed, including  (not processed)
+      - 81a931c6ffd5 Require pairwise intersections to be ≡0 mod 3 only, so singletons and  (not processed)
+      - 5eb5367fa7a5 Allow only sizes ≡1 mod 3, which removes the 2-sets. (not processed)
+    - 61615ea6cebc Require pairwise intersections to be exactly 1 mod 3, so disjoint sets f={'3': 3, '4': 3, '5': 4, '6': 6, '7': 6} surprise=0.00 mode=fixed
+      - 3186c6cd6a48 Additionally force every member to have size exactly 2, so the family  (not processed)
+      - 296a3e322cd9 Require pairwise intersections to be 0 mod 3 instead of 1 mod 3, with  (not processed)
+    - b6703e8e6947 Take sizes 0 mod 3, so the extremal families look like partial Steiner f={'3': 2, '4': 2, '5': 3, '6': 6, '7': 8} surprise=0.00 mode=fixed
+      - 6032e7b4292a Require pairwise intersections to be 0 mod 3 only, dropping the residu (not processed)
+      - 059f3dccf7f3 Allow set sizes ≡ 0 or 1 mod 3 while keeping intersections in {0,1} mo (not processed)
+      - eac059c54b58 Additionally require the exact condition |A∩B| in {0,1}, which exclude (not processed)
+  - 5844ffafe50d cap_set f={'1': 2, '2': 4, '3': 9} surprise=0.00 mode=fixed
+    - 6d6e66149695 Work in F_5^n instead of F_3^n, so 3-term progressions are no longer t f={'1': 2, '2': 6} surprise=0.00 mode=fixed
+      - 65795a515fcb The field is F_7 instead of F_5, so 3-AP-free sets live in F_7^n. (not processed)
+      - 1b6a9053b316 The condition becomes sum-free (x+y=z) instead of 3-AP-free. The extre (not processed)
+    - 63620c9dfcc4 Forbid repeated pairwise sums (Sidon sets) in F_3^n instead of 3-term  f={'1': 2, '2': 3, '3': 5} surprise=0.00 mode=fixed
+      - 7635b7118f66 Work in F_2^n instead of F_3^n. Then a+a=0 for every a, so any two ele (not processed)
+      - ea78b31e7ee1 Work in F_5^n instead of F_3^n. With a larger characteristic there is  (not processed)
+      - 65a24109f87d Replace the Sidon condition with sum-free in F_3^n. The extremal sets  (not processed)
+    - fa59ca37f533 Work in F_2^n. Here x+y=2z=0 forces x=y, so the condition is vacuous a f={'1': 2, '2': 4, '3': 8, '4': 16} surprise=0.00 mode=fixed
+      - cfa3f9be9298 Forbid x+y=z instead of 3-term progressions in F_2^n. The best set is  (not processed)
+  - 93f362bec5e1 sumfree_cyclic f={'4': 2, '5': 2, '6': 3, '7': 2, '8': 4, '9': 3, '10': 5, '11': 4, '12': 6, '13': 4, '14': 7, '15': 6, '16': 8, '17': 6, '18': 9, '19': 6, '20': 10} surprise=0.00 mode=fixed
+    - 07241a27b0fe Drop the wraparound and look for sum-free subsets of the integers [1.. f={'4': 2, '5': 3, '6': 3, '7': 4, '8': 4, '9': 5, '10': 5, '11': 6, '12': 6, '13': 7, '14': 7, '15': 8, '16': 8, '17': 9, '18': 9, '19': 10, '20': 10} surprise=0.00 mode=fixed
+    - ac22d0c919ac Forbid 3-term arithmetic progressions in Z_n, with x≠y and x+y=2z, in  f={'4': 2, '5': 2, '6': 4, '7': 3, '8': 4, '9': 4, '10': 4, '11': 4, '12': 4, '13': 4, '14': 6, '15': 4, '16': 6, '17': 5, '18': 8, '19': 6, '20': 8} surprise=0.07 mode=fixed
+    - 2a076338bdcd Require all pairwise sums in Z_n to be distinct (Sidon sets), so the a f={'4': 2, '5': 2, '6': 2, '7': 3, '8': 3, '9': 3, '10': 3, '11': 3, '12': 3, '13': 4, '14': 4, '15': 4, '16': 4, '17': 4, '18': 4, '19': 4, '20': 4} surprise=0.00 mode=fixed
+  - 12f857ca1fa0 salem_spencer f={'4': 3, '5': 4, '6': 4, '7': 4, '8': 4, '9': 5, '10': 5, '11': 6, '12': 6, '13': 7, '14': 8, '15': 8, '16': 8, '17': 8, '18': 8, '19': 8, '20': 9} surprise=0.00 mode=fixed
+  - f7cb64d70afa sidon_int f={'4': 3, '5': 3, '6': 3, '7': 4, '8': 4, '9': 4, '10': 4, '11': 4, '12': 5, '13': 5, '14': 5, '15': 5, '16': 5, '17': 5, '18': 6, '19': 6, '20': 6} surprise=0.00 mode=fixed
+  (2 mutations rejected)
