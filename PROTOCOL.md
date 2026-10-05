@@ -466,6 +466,136 @@ RESULTS.md.
 The graph family stays deferred. 154 addfree specs remain eligible, so the scan has not
 run thin.
 
+### Run 3 build notes
+
+Choices made while building step 1 (branch `run3-build`), where the text above left a
+reading open. No definition, cut point, threshold, size or forecast above was changed.
+Each follows the stated intent as closely as the code allows.
+
+**Ratios, bands and Y**
+- g is floored before every ratio and comparison: r = floor(g(n_max)) / f(n_max), and Y
+  compares floored values. f is an integer, so g = 7.5 bounds it by 7, and the checker
+  already counts such a bound as tight (`tight_at`). If f(n_max) = 0, r = 1 when g < 1,
+  and r is infinite (loose) otherwise.
+- Y = 1 if the wide weave's best counted, consistent floored g(n_max) is strictly below
+  the better of the two probes' best. If neither probe has a consistent bound, any
+  counted, consistent wide bound gives Y = 1.
+
+**The prior P**
+- P is the parent's winning bridges, ranked by their best g(n_max) and capped at 2. Only
+  if the parent has no win does P fall back to the family ranking (run 2's "failing
+  that"); a parent with one winning bridge gives a P of one.
+- Only counted bounds labelled with a menu id feed P. This closes the `in_prior` hole:
+  a free-form label, or a wide bound with an excluded label, never enters P.
+
+**The method forecast**
+- The method call shows the statement, every true value, n_max and f(n_max), the band
+  definitions, and P's bridge entries. It does not show the lemma menu.
+- If P is empty, the call shows the full bridge menu, and its `bridge_id` must be a menu
+  id, or the response is a parse error (one retry).
+- Storage mirrors run 2's distribution/top1 pair:
+  - a `method_band` row (the full distribution, confidence 1) whose outcome row carries
+    the observed band, `bits` = M and `p_true`;
+  - a binary `method_band_top` row (the claim "band = the modal band", at its
+    probability) for gap and Brier calibration.
+- Both rows are scored on the first probe only. If the first probe's call fails, both
+  are scored `couldnt-tell`.
+
+**Probes and the wide weave**
+- A probe bound whose label falls outside P is still counted. The excluded-label rule
+  applies to the wide weave only. Such bounds are flagged `in_menu_shown: false`.
+- A problem is completed when all three weave calls returned parsed JSON. An empty bound
+  list counts as stored. In `--breadth full`, `--max-problems` counts completed
+  problems.
+- `--breadth full` refuses `--policy surprise` and defaults to random.
+
+**Seeds and mutants**
+- `a4b_seeds.jsonl` lists the setfam seeds and then the addfree seeds.
+  `run --seeds-from` processes them in a seeded random order (run 2's behaviour), so a
+  budget-capped run samples both families.
+- Mutants queue behind all 39 seeds, so a run of about 13 problems has no mutant
+  stratum.
+- A mutant equal to one of run 2's 40 specs is refused and logged as `excluded`.
+
+**Clusters**
+- A child's ns are the scan's ns for its regime (F_5^k and F_7^k, outside the scan, use
+  `default_ns`). Values are computed in increasing n up to the first timeout, at 5 s per
+  (spec, n), the scan's limit.
+- Two members have the "same f sequence" if they agree on every common n.
+- A draw that repeats an earlier draw still uses up a draw.
+- Each parent's draws use a generator seeded by (seed, parent id), so replacing one
+  parent does not change any other cluster.
+- A candidate parent that is already a child in an earlier cluster is skipped, and the
+  skip is listed with the replacements. A parent whose recomputation yields fewer than 4
+  values is replaced.
+- Clusters are shuffled with `Random(seed)`. Children keep their draw order.
+
+**A5b notes**
+- Notes keep run 2's format and heading, most recent first. N2 adds an `Explanation:`
+  line to each note.
+- An explanation longer than 80 words is cut to its first 80 words. It is not retried,
+  so the budget is not spent on retries. The word count and the cut are recorded. The
+  smoke test's one real explanation ran to 92 words.
+- The explain prompt's witness is the one at the member's largest computed n.
+- Overlap is computed in every condition, against the earlier members of the cluster
+  (the members N1 and N2 show). It is undefined for parents.
+
+**Budgets in `run3`**
+- A5b runs as many whole clusters as `--budget-a5b` covers at the nominal cost: 5 + 5
+  + 9 calls per cluster of 5.
+- Each condition may spend whatever slack remains after the later conditions' nominal
+  calls are reserved.
+- At the protocol's 228 there is no slack, so a retry can cut N2's last problem. The
+  report pairs only what exists.
+
+**Signals and tests**
+- **M0** is the leave-one-out frequency within the primary population for the AUC tests.
+  In the replay it is computed within the replay's ranked set (completed problems whose
+  probe won). A zero frequency scores 30 bits, as M does.
+- **Direction**: "disappointment" is M on problems whose observed band is worse than the
+  forecast's median band, and 0 elsewhere. "Pleasant" is the same for a better band. A
+  band equal to the median counts as neither. The report gives an AUC for each.
+- **Policy replay**:
+  - The population is the completed problems, including P-empty ones.
+  - Prior-failed problems are always widened.
+  - Each signal widens round(q · N) of the rest, ties broken by a seeded draw.
+  - Calls are the stored calls by step, retries included. The method call is charged to
+    M only.
+  - "Counted wins" counts winning bounds, as run 2's wins per 100 calls did.
+  - Rows for "never" and "always" are shown for reference.
+- **Logistic**:
+  - Newton–Raphson with a 1e-6 ridge; a coefficient above 30 in size is treated as
+    separation.
+  - The interval comes from a bootstrap of 2000 resamples of primary problems, using
+    the converged samples; the count of dropped samples is reported.
+- **Bootstrap intervals**: all are 2.5–97.5 percentiles. A sample with no within-band
+  pair is dropped and counted. The within-band bootstrap uses the run seed; the others
+  use seed + 1 to + 3.
+- **Wilcoxon** is exact: zeros are dropped and ties get average ranks.
+- **Replication** of run 2: a "non-prior win" is a counted wide bound with a win.
+
+**Tight importance**
+- Pairs are (bridge, sorted lemma_ids), for raw importance too (the earlier report keyed
+  each lemma separately). Only counted bounds count.
+- In the tie-break, a problem where the pair was used without a consistent bound
+  contributes 0 to the mean of best f/g.
+- A pair used on fewer than 3 problems has no tie-break and ranks below the pairs in its
+  tier that have one.
+- For the out-of-sample Spearman, run 2's measures become scalars: families + 0.999 ×
+  tie-break (tight), and families × 1000 + problems (raw). A pair run 2 never used scores
+  0.
+
+**Infrastructure**
+- `truth.json` stays values-only. Witnesses go to an append-only sidecar,
+  `truth.witness.jsonl`.
+- `clusters` and `run3` throttle `truth.json` rewrites to one every 30 s and flush at
+  the end.
+- `run3` builds at 5 s per (spec, n) and runs the loop at 20 s (run 2's default). It
+  precomputes the A4b seeds' truths and witnesses during the build.
+- `run3` refuses a model alias. Its probe call aborts unless the CLI reports the pinned
+  id (`claude-sonnet-5-5`).
+- Every call row records the problem, the requested model and the returned model.
+
 ## Known limits
 
 - Consistency at small n is weak evidence for an asymptotic bound, and the proof sketches

@@ -38,6 +38,30 @@ random order of the selection), `--predict-only` (arm A5: one predict call per p
 weave or mutation) and `--notes on|off` (arm A5: earlier problems of the same family and
 their true f in the predict prompt, most recent first, at most 12).
 
+Run 3 (PROTOCOL.md "Run 3"; build choices in "Run 3 build notes") adds:
+
+- `run --breadth full` (arm A4b): a `method_band` forecast, then a probe and a re-probe
+  restricted to the prior P, then a wide weave outside P's bridge groups. It uses
+  `--policy random`.
+- `run --predict-only --clusters FILE --notes on --notes-scope cluster [--explain on]`
+  (arm A5b: N1, or N2 with explanations; N0 is `--notes off`). `--clusters-top N`
+  limits the run to the first N clusters.
+- `run --exclude-run2` refuses run 2's 40 specs.
+- `clusters` builds `scan/run3/clusters.json` and `a4b_seeds.jsonl`. Its flags are
+  `--parents 6`, `--children 4`, `--draws 50`, `--a4b-setfam`, `--a4b-addfree 20`,
+  `--seed`, `--time-limit 5` and `--cache`.
+- `report3 --a4b STORE --a5b STORE` prints the run 3 reports.
+- `run3 --out DIR` is the cloud entry point. It builds the lists, makes one probe call,
+  runs A5b and then A4b, and writes `a5b_report.txt` and `a4b_report.txt`. It never
+  commits. Its flags are `--budget-a5b 228`, `--budget-a4b 600`, `--max-problems 80`,
+  `--a5b-clusters`, `--model claude-sonnet-5-5` (exact ids only),
+  `--backend claude|mock`, the build flags above, and `--no-precompute-seeds`.
+
+```sh
+uv run python -m mathexp run3 --out scratch/run3 --backend mock --parents 1 --budget-a5b 38 --budget-a4b 80
+uv run python -m mathexp run3 --out results/run3                  # cloud: Sonnet 5.5, protocol sizes
+```
+
 `scan` flags: `--family setfam|addfree` (default both), `--max-len L` (default setfam 8,
 addfree 12), `--top K` (40), `--quota Q` (20 per family), `--time-limit SECONDS` (5 per
 (spec, n)). The scan resumes from `cache/scan_truth.jsonl`; golf tables are cached in
@@ -48,14 +72,18 @@ addfree 12), `--top K` (40), `--quota Q` (20 per family), `--time-limit SECONDS`
 ```
 PROTOCOL.md            the design (definitions fixed before any data)
 mathexp/
-  __main__.py          CLI: run, report, scan, truth, show-prompt
+  __main__.py          CLI: run, report, report3, scan, clusters, run3, truth, show-prompt
   guard.py             idle priority + single-threaded numeric libraries
-  loop.py              the loop, surprise trigger, prior bridges, A4 breadth
+  loop.py              the loop, surprise trigger, prior bridges, A4 breadth; run 3 full breadth (A4b), cluster notes (A5b)
   problems/base.py     Family interface, problem_id, one-field mutation check
   problems/setfam.py   family A: set families on [n] (max clique)
   problems/addfree.py  family B: equation-free subsets of [n], Z_n, F_p^k (backtracking)
   problems/clique.py   bitset branch-and-bound max clique (Tomita-style colouring bound)
-  truth.py             brute-force cache: cache/truth.json (gitignored)
+  truth.py             brute-force cache: cache/truth.json (gitignored) + extremal witnesses (truth.witness.jsonl)
+  clusters.py          run 3: A5b clusters and A4b seed list (`clusters`)
+  method.py            run 3: bands, method surprise M, bridge groups, probe summaries
+  run3.py              run 3 cloud entry point (`run3`)
+  report3.py           run 3 reports: A4b (stratified AUC, bootstrap, replay), A5b, tight importance
   golf.py              golf length G(seq): bottom-up enumeration, cached tables, jump J
   scan.py              run 2 scan: enumerate specs, brute-force, golf, Occam surprise S, score S/L, select top K (S > 0)
   checking.py          weave statuses: violated / consistent / insufficient / error, tight_at, win
@@ -65,7 +93,7 @@ mathexp/
   report.py            calibration, surprises, statuses, reuse, A4, what-if tree
   llm.py               claude / openrouter / mock backends
   prompts.py           templates, menus, seeds, JSON schemas, parsing
-  prompts/*.md         system, predict, weave_menu, weave_free, mutate (versioned)
+  prompts/*.md         system, predict, weave_menu, weave_free, mutate, method, explain, ping (versioned)
   menus/bridges.toml   10 bridges
   menus/lemmas.toml    19 lemmas (unverified entries carry unsure = true)
   seeds.toml           9 named seeds with known_as names
@@ -101,7 +129,8 @@ response, parse status, model id, tokens, nominal cost).
 - (c) a mutation that changes anything but exactly one spec field (ns aside), or is
   invalid, is rejected and logged in `problems.jsonl`; a valid one whose brute force yields
   fewer than 4 values on its ns is logged as `refused_uncheckable` and not queued;
-- model-written bounds are evaluated only through the AST allowlist.
+- model-written bounds are evaluated only through the AST allowlist;
+- (run 3) the A4b probe is refused until the problem's `method_band` row is on disk.
 
 ## Compute rules
 

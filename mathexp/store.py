@@ -16,7 +16,9 @@ down got violated again"):
 - (a) :meth:`Store.require_value_predictions` refuses truth computation for
   a (problem, n) until its value-level prediction (a distribution; an interval in
   run 1) is on disk;
-- (b) a store opened for the ``mock`` backend refuses the repo's ``store/``.
+- (b) a store opened for the ``mock`` backend refuses the repo's ``store/``;
+- (run 3) :meth:`Store.require_method_prediction` refuses the A4b probe until the
+  problem's ``method_band`` row is on disk.
 """
 
 from __future__ import annotations

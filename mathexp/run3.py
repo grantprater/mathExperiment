@@ -75,7 +75,8 @@ def ping(backend, out: Path, log) -> dict:
     if not row["ok"]:
         raise Run3Abort(f"probe call to the {backend.name} backend failed: {row['error']}. "
                         f"Check that `claude -p` works and is logged in; nothing was run.")
-    if backend.name == "claude" and row.get("model") != backend.model:
+    used = set((row.get("meta") or {}).get("model_usage") or {}) | {row.get("model")}
+    if backend.name == "claude" and backend.model not in used:
         raise Run3Abort(f"probe call returned model {row.get('model')!r}, expected the pinned {backend.model!r}")
     log(f"probe call ok: model {row.get('model')} in {row['wall_s']}s")
     return row
