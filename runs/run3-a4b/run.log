@@ -89,3 +89,53 @@ problem d6506a5c484f (scan): setfam {"p": 5, "size_mod": [1], "int_mod": [4]}
   weave[3/wide3] incidence_matrix+gram_rank: g = 'n + 1' -> consistent WIN tight_at=[]
 problem a2de34342b6b (scan): setfam {"p": 5, "size_mod": [1], "int_mod": [0, 4]}
   f = {3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 28}  surprise mean=0.04 bits max=0.07 bits
+  weave[1/probe] graph_spectrum+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 2)' -> consistent tight_at=[]
+  weave[2/probe] graph_spectrum+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 2)' -> consistent tight_at=[]
+  weave[3/wide3] multilinear_poly+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 2)' -> consistent tight_at=[]
+problem 2c81d0d691b0 (scan): setfam {"p": 3, "size_mod": [1], "int_mod": [1]}
+  f = {3: 1, 4: 2, 5: 2, 6: 2, 7: 4, 8: 4}  surprise mean=0.13 bits max=0.23 bits
+  weave[1/probe] double_counting+self_orthogonal: g = '1 + 3**floor(n/2)' -> consistent WIN tight_at=[]
+  weave[2/probe] double_counting+self_orthogonal: g = '1 + 3**floor(n/2)' -> consistent WIN tight_at=[]
+  weave[3/wide3] charvec_fp+self_orthogonal: g = '3**floor(n/2)' -> consistent WIN tight_at=[]
+problem abfb52520f31 (scan): addfree {"group": "cyclic", "equation": "3ap", "equation2": {"a": 1, "b": 1, "c": 3}}
+  f = {4: 2, 5: 2, 6: 2, 7: 2, 8: 3, 9: 3, 10: 3, 11: 3, 12: 4, 13: 3, 14: 4, 15: 4, 16: 4, 17: 4, 18: 6, 19: 4, 20: 5, 21: 5, 22: 6, 23: 5, 24: 6, 25: 5, 26: 6, 27: 6, 28: 7, 29: 6, 30: 7}  surprise mean=3.76 bits max=30.0 bits
+  weave[1/probe] double_counting+pigeonhole: g = 'n/2 + 1' -> consistent WIN tight_at=[]
+  weave[2/probe] double_counting+pigeonhole: g = 'n if n % 2 == 0 else n // 2' -> error tight_at=[]
+  weave[3/wide3] translates+pigeonhole: g = '(n+1)/2 if n % 2 == 1 else n//2 + 2' -> error tight_at=[]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['group', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
+problem 301c2494f4b3 (scan): addfree {"group": "int", "equation": "sumfree", "equation2": {"a": 1, "b": 2, "c": 3}}
+  f = {4: 2, 5: 3, 6: 3, 7: 3, 8: 4, 9: 4, 10: 4, 11: 5, 12: 5, 13: 6, 14: 6, 15: 6, 16: 6, 17: 7, 18: 7, 19: 8, 20: 8, 21: 9, 22: 9, 23: 9, 24: 9, 25: 9, 26: 9, 27: 9, 28: 9, 29: 9, 30: 9}  surprise mean=2.48 bits max=6.75 bits
+  weave[1/probe] double_counting+pigeonhole: g = '(n+1)//2' -> consistent WIN tight_at=[4, 5, 6, 8]
+  weave[2/probe] double_counting+pigeonhole: g = 'floor((n+1)/2)' -> consistent WIN tight_at=[4, 5, 6, 8]
+  weave[3/wide3] translates+disjoint_translates: g = '(n+1)//2' -> consistent WIN tight_at=[4, 5, 6, 8]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['group', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
+problem f7cb64d70afa (scan): addfree {"group": "int", "equation": "sidon"}
+  f = {4: 3, 5: 3, 6: 3, 7: 4, 8: 4, 9: 4, 10: 4, 11: 4, 12: 5, 13: 5, 14: 5, 15: 5, 16: 5, 17: 5, 18: 6, 19: 6, 20: 6, 21: 6, 22: 6, 23: 6, 24: 6, 25: 6, 26: 7, 27: 7, 28: 7, 29: 7, 30: 7}  surprise mean=0.04 bits max=0.04 bits
+  weave[1/probe] double_counting+sidon_counting: g = 'floor((1+sqrt(8*n-7))/2)' -> consistent WIN tight_at=[4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 18, 19, 20, 21, 26, 27, 28]
+  weave[2/probe] double_counting+sidon_counting: g = '(1+sqrt(8*n-7))/2' -> consistent WIN tight_at=[4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 18, 19, 20, 21, 26, 27, 28]
+  weave[3/wide3] translates+sidon_counting: g = '(1+sqrt(8*n-7))/2' -> consistent WIN tight_at=[4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 18, 19, 20, 21, 26, 27, 28]
+  weave[3/wide3] incidence_matrix+sidon_counting: g = '(-1+sqrt(16*n-7))/2' -> consistent WIN tight_at=[4, 5, 7]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['group', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
+problem 5a8c1dc9da5b (scan): addfree {"group": "cyclic", "equation": "sidon", "equation2": {"a": 3, "b": 3, "c": 3}}
+  f = {4: 1, 5: 2, 6: 2, 7: 2, 8: 2, 9: 2, 10: 2, 11: 3, 12: 2, 13: 3, 14: 3, 15: 3, 16: 3, 17: 3, 18: 3, 19: 4, 20: 4, 21: 3, 22: 4, 23: 4, 24: 4, 25: 4, 26: 4, 27: 4, 28: 4, 29: 4, 30: 4}  surprise mean=2.67 bits max=30.0 bits
+  weave[1/probe] double_counting+pigeonhole: g = 'floor((sqrt(8*n+1)-1)/2)' -> consistent WIN tight_at=[5]
+  weave[2/probe] double_counting+pigeonhole: g = 'floor((1+sqrt(4*n-3))/2)' -> consistent WIN tight_at=[5, 6, 11, 19, 20]
+  weave[3/wide3] translates+sidon_counting+pigeonhole: g = 'floor((1+sqrt(4*n-3))/2)' -> consistent WIN tight_at=[5, 6, 11, 19, 20]
+  weave[3/wide3] translates+sidon_counting+pigeonhole: g = 'floor((sqrt(8*n+1)-1)/2)' -> consistent WIN tight_at=[5]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['group', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
+problem 45ff4cf21f16 (scan): setfam {"p": 5, "size_mod": [0], "int_abs": [2, 3]}
+  f = {3: 1, 4: 1, 5: 1, 6: 1, 7: 3, 8: 8}  surprise mean=0.06 bits max=0.1 bits
+  weave[1/probe] graph_spectrum+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[]
+  weave[2/probe] double_counting+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[]
+  weave[3/wide3] multilinear_poly+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[]
+  mutation excluded: c2f4121e29f8 is one of run 2's specs
+problem 9f7fc92e1c06 (scan): setfam {"p": 3, "size_mod": [1], "int_abs": [1, 2]}
+  f = {3: 1, 4: 2, 5: 2, 6: 3, 7: 7, 8: 9}  surprise mean=0.47 bits max=2.56 bits
