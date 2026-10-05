@@ -8,7 +8,8 @@
   `report.txt` and `run.log`;
 - the paired and within-family numbers below were recomputed by hand from the stores.
 
-**The scan surfaces lynchpins.** Extracting the extremal families by brute force:
+**The scan surfaces lynchpins.** Extracting the extremal families by brute force (done
+ad hoc; the extraction code is not in the repo, and run 3 adds it with a unit test):
 - "pairwise intersections of size 1 or 3" at n = 7 is the Fano plane (its 7 lines, which
   cover every pair exactly once) plus the whole set;
 - "intersections of size 0 or 2" at n = 8 is S(3,4,8) (14 blocks, which cover every triple
