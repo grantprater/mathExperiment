@@ -1,0 +1,58 @@
+# Named seed problems. `known_as` lists accepted names for recognition scoring
+# (matched case-insensitively, ignoring punctuation, as a substring either way).
+# Family B seeds keep `p` present even for int/cyclic groups (it is ignored there)
+# so that a group change is a one-field mutation.
+
+[[seed]]
+name = "oddtown"
+family = "setfam"
+known_as = ["Oddtown", "odd town", "Clubs of Oddtown"]
+spec = { p = 2, size_mod = [1], int_mod = [0], ns = [3, 4, 5, 6, 7] }
+
+[[seed]]
+name = "eventown"
+family = "setfam"
+known_as = ["Eventown", "even town"]
+spec = { p = 2, size_mod = [0], int_mod = [0], ns = [3, 4, 5, 6, 7] }
+
+[[seed]]
+name = "reverse_oddtown"
+family = "setfam"
+known_as = ["reverse Oddtown", "Oddtown", "Eventown"]
+spec = { p = 2, size_mod = [0], int_mod = [1], ns = [3, 4, 5, 6, 7] }
+
+[[seed]]
+name = "fisher_one"
+family = "setfam"
+known_as = ["Fisher's inequality", "Fisher inequality", "de Bruijn–Erdős", "de Bruijn-Erdos", "nonuniform Fisher"]
+spec = { p = 2, int_abs = [1], ns = [3, 4, 5, 6, 7] }
+
+[[seed]]
+name = "fw_mod3_uniform"
+family = "setfam"
+known_as = ["Frankl–Wilson", "Frankl-Wilson", "modular Ray-Chaudhuri–Wilson", "Ray-Chaudhuri-Wilson"]
+spec = { p = 3, size_abs = [3], int_mod = [0], ns = [3, 4, 5, 6, 7] }
+
+[[seed]]
+name = "cap_set"
+family = "addfree"
+known_as = ["cap set", "capset", "Ellenberg–Gijswijt", "Ellenberg-Gijswijt"]
+spec = { group = "fpk", p = 3, equation = "3ap", ns = [1, 2, 3] }
+
+[[seed]]
+name = "sumfree_cyclic"
+family = "addfree"
+known_as = ["sum-free", "sumfree", "sum free"]
+spec = { group = "cyclic", p = 3, equation = "sumfree", ns = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20] }
+
+[[seed]]
+name = "salem_spencer"
+family = "addfree"
+known_as = ["Salem–Spencer", "Salem-Spencer", "3-AP-free", "3AP-free", "Roth", "Behrend"]
+spec = { group = "int", p = 3, equation = "3ap", ns = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20] }
+
+[[seed]]
+name = "sidon_int"
+family = "addfree"
+known_as = ["Sidon", "Golomb ruler", "B2 set", "B_2"]
+spec = { group = "int", p = 3, equation = "sidon", ns = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20] }
