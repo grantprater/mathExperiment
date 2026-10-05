@@ -53,9 +53,12 @@ Run 3 (PROTOCOL.md "Run 3"; build choices in "Run 3 build notes") adds:
 - `report3 --a4b STORE --a5b STORE` prints the run 3 reports.
 - `run3 --out DIR` is the cloud entry point. It builds the lists, makes one probe call,
   runs A5b and then A4b, and writes `a5b_report.txt` and `a4b_report.txt`. It never
-  commits. Its flags are `--budget-a5b 228`, `--budget-a4b 600`, `--max-problems 80`,
-  `--a5b-clusters`, `--model claude-sonnet-5-5` (exact ids only),
-  `--backend claude|mock`, the build flags above, and `--no-precompute-seeds`.
+  commits. Its flags are `--budget-a5b 285` (a cap: 228 nominal plus retry slack),
+  `--budget-a4b 600`, `--max-problems 80`, `--a5b-clusters`, `--phase all|a5b|a4b`
+  (one arm only, building only what it needs), `--model claude-sonnet-5-5` (exact ids
+  only), `--backend claude|mock`, the build flags above, and `--no-precompute-seeds`.
+  It refuses an out directory whose store for the phase already has rows (no resume),
+  and stops with exit code 4 after 6 backend errors in a row.
 
 ```sh
 uv run python -m mathexp run3 --out scratch/run3 --backend mock --parents 1 --budget-a5b 38 --budget-a4b 80

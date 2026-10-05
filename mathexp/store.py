@@ -83,7 +83,16 @@ class Store:
         p = self.path(name)
         if not p.exists():
             return []
-        return [json.loads(line) for line in p.read_text(encoding="utf-8").splitlines() if line.strip()]
+        text = p.read_text(encoding="utf-8")
+        lines = text.splitlines()
+        if lines and not text.endswith("\n"):
+            # a process killed mid-append leaves an unterminated last line: skip it if
+            # it does not parse, so a crashed run's store still reads
+            try:
+                json.loads(lines[-1])
+            except json.JSONDecodeError:
+                lines = lines[:-1]
+        return [json.loads(line) for line in lines if line.strip()]
 
     # ---- predictions --------------------------------------------------------
     def predict(self, *, run: str, by: str, domain: str, kind: str, level: str, claim: str,

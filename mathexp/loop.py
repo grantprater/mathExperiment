@@ -38,6 +38,7 @@ import json
 import math
 import random
 import secrets
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -59,6 +60,14 @@ MAX_BITS = 30.0
 MIN_CHECKABLE = 4
 #: Arm A5: at most this many notes (earlier problems of the same family) in the prompt.
 NOTES_CAP = 12
+
+
+
+class BackendDown(RuntimeError):
+    """``max_backend_errors`` backend failures in a row (not parse errors): the backend
+    is down or out of quota, so the run stops instead of spending its budget on
+    failures. Everything already stored stays valid."""
+
 
 #: Arm A4 breadths.
 NARROW_K, NARROW_M = 1, 1
@@ -119,15 +128,17 @@ def prior_bridges(store: Store, family: str, parent: str | None, model: str | No
 
 
 def prior_full(store: Store, family: str, parent: str | None, model: str | None) -> tuple[list[str], str]:
-    """Run 3's prior P (PROTOCOL.md "A4b", step 2), at most ``method.P_CAP`` bridges:
-    the parent's winning bridges ranked by their best (lowest) g(n_max); failing that,
-    the family's ranking by run 2's rule; failing that, empty.
+    """Run 3's prior P (PROTOCOL.md "A4b", step 2), at most ``method.P_CAP`` bridges,
+    filled in order: the parent's winning bridges ranked by their best (lowest)
+    g(n_max); then the family's ranking by run 2's rule, skipping bridges already in P;
+    if both are empty, P is empty (the method call chooses).
 
     Only counted bounds whose bridge label is a menu id count, so a model's free-form
     or excluded label never enters P (run 2's ``in_prior`` trusted the label)."""
     menu = {b["id"] for b in prompts.bridges()}
     weaves = [w for w in store.rows("weaves") if w.get("counted", True) and w.get("bridge_id") in menu
               and (model is None or w.get("by") == model)]
+    prior: list[str] = []
     if parent:
         best: dict[str, float] = {}
         for w in weaves:
@@ -135,10 +146,19 @@ def prior_full(store: Store, family: str, parent: str | None, model: str | None)
                 g = method.g_at_nmax(w)
                 if g is not None:
                     best[w["bridge_id"]] = min(best.get(w["bridge_id"], math.inf), g)
-        if best:
-            return sorted(best, key=lambda b: (best[b], b))[:method.P_CAP], "parent"
-    ranked, source = prior_bridges_from(weaves, family, model)
-    return ranked[:method.P_CAP], source
+        prior = sorted(best, key=lambda b: (best[b], b))[:method.P_CAP]
+    from_parent = len(prior)
+    ranked, _ = prior_bridges_from(weaves, family, model)
+    for b in ranked:
+        if len(prior) >= method.P_CAP:
+            break
+        if b not in prior:
+            prior.append(b)
+    if not prior:
+        return [], "none"
+    if from_parent == len(prior):
+        return prior, "parent"
+    return prior, "parent+family" if from_parent else "family"
 
 
 def prior_bridges_from(weaves: list[dict], family: str, model: str | None) -> tuple[list[str], str]:
@@ -189,6 +209,8 @@ class Config:
     time_limit: float = DEFAULT_TIME_LIMIT
     cache: TruthCache | None = None
     log: callable = print
+    retry_wait: float = 0.0              # seconds to wait before retrying after a backend error
+    max_backend_errors: int | None = None  # this many backend errors in a row raise BackendDown
 
 
 @dataclass(order=True)
@@ -207,6 +229,7 @@ class Loop:
         self.run = cfg.run_id if cfg.run_id != "auto" else \
             datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S") + "-" + secrets.token_hex(2)
         self.calls = 0
+        self.backend_errors = 0  # consecutive backend (not parse) failures
         self.model_id = getattr(self.backend, "model", None)
         self.frontier: list[_Item] = []
         self.counter = itertools.count()
@@ -242,7 +265,12 @@ class Loop:
                    "system_version": self.sys_version, "system": self.system, "prompt": prompt,
                    "raw": None, "parse_ok": False, "parse_error": None, "meta": {}}
             try:
-                raw, meta = self.backend.complete(self.system, prompt, prompts.SCHEMAS[schema], context)
+                try:
+                    raw, meta = self.backend.complete(self.system, prompt, prompts.SCHEMAS[schema], context)
+                except LLMError:
+                    self.backend_errors += 1
+                    raise
+                self.backend_errors = 0
                 row["raw"], row["meta"] = raw, meta
                 row["model"] = meta.get("model")
                 if meta.get("model"):
@@ -255,6 +283,12 @@ class Loop:
                 row["parse_error"] = f"{type(e).__name__}: {e}"
                 self.store.append("calls", row)
                 self.log(f"  [{step}] attempt {attempt} failed: {row['parse_error'][:200]}")
+                if isinstance(e, LLMError):
+                    if self.cfg.max_backend_errors and self.backend_errors >= self.cfg.max_backend_errors:
+                        raise BackendDown(f"{self.backend_errors} backend errors in a row; last: "
+                                          f"{row['parse_error'][:300]}") from None
+                    if self.cfg.retry_wait > 0 and attempt == 1:
+                        time.sleep(self.cfg.retry_wait)
         return None, call_id, version
 
     # ---- frontier -------------------------------------------------------------

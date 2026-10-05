@@ -271,10 +271,12 @@ def main(argv=None) -> int:
     x.add_argument("--out", required=True, help="output directory for stores, lists and reports")
     x.add_argument("--backend", choices=["claude", "mock"], default="claude")
     x.add_argument("--model", default=None, help=f"exact model id (default {RUN3_MODEL}; aliases are refused)")
-    x.add_argument("--budget-a5b", type=int, default=DEFAULT_BUDGET_A5B, help="A5b calls (228)")
+    x.add_argument("--budget-a5b", type=int, default=DEFAULT_BUDGET_A5B, help="A5b call cap, retries included (228 nominal; default 285)")
     x.add_argument("--budget-a4b", type=int, default=DEFAULT_BUDGET_A4B, help="A4b calls, retries included (600)")
     x.add_argument("--max-problems", type=int, default=DEFAULT_MAX_PROBLEMS, help="A4b completed problems (80)")
     x.add_argument("--a5b-clusters", type=int, default=None, help="A5b: at most N clusters (default all built)")
+    x.add_argument("--phase", choices=["all", "a5b", "a4b"], default="all",
+                   help="run both arms, or one (each builds only what it needs; for separate routines)")
     x.add_argument("--time-limit", type=float, default=DEFAULT_TIME_LIMIT, help="loop seconds per (problem, n)")
     x.add_argument("--no-precompute-seeds", dest="precompute_seeds", action="store_false",
                    help="skip brute-forcing the A4b seeds during the build (the loop computes them lazily)")

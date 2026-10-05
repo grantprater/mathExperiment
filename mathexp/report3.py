@@ -287,6 +287,12 @@ def a4b_report(store: Store, seed: int = 0, run2_stores=RUN2_A4_STORES) -> str:
                + (f" ({100 * trig / len(prim):.0f}%)" if prim else ""))
     strata = Counter(p.get("stratum") for p in comp)
     out.append("  strata (completed): " + ", ".join(f"{k} {v}" for k, v in sorted(strata.items(), key=str)))
+    probe_ws = [w for w in weaves if w.get("step") in ("probe", "reprobe")]
+    wide_ws = [w for w in weaves if w.get("step") == "wide"]
+    out.append(f"  labels: probe bounds outside P {sum(1 for w in probe_ws if not w.get('in_menu_shown', True))} "
+               f"of {len(probe_ws)} (counted); wide bounds with an excluded label "
+               f"{sum(1 for w in wide_ws if not w.get('counted', True))} of {len(wide_ws)} (not counted), with "
+               f"an off-menu bridge or lemma id {sum(1 for w in wide_ws if not w.get('menu_ids_ok', True))}")
     out.append("")
 
     sig = _signal_values(prim, seed, prim)

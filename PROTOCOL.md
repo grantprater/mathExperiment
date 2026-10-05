@@ -482,9 +482,14 @@ Each follows the stated intent as closely as the code allows.
   counted, consistent wide bound gives Y = 1.
 
 **The prior P**
-- P is the parent's winning bridges, ranked by their best g(n_max) and capped at 2. Only
-  if the parent has no win does P fall back to the family ranking (run 2's "failing
-  that"); a parent with one winning bridge gives a P of one.
+- P is an ordered fill up to 2: the parent's winning bridges, ranked by their best
+  g(n_max); then the family's ranking (run 2's importance rule), skipping bridges
+  already in P. A parent with one winning bridge therefore gets the family's best other
+  bridge as the second. A seed, or a parent with no win, gets the family's top 2. P is
+  empty only if both sources are. (Revised in review, before any run-3 data: the build
+  first read "then" as run 2's "failing that", which gave a P of one after a parent
+  with one win. Run 2's rule had no cap, so "failing that" was its only way to bound
+  P; run 3 caps P at 2 and says "then", which reads as a fill.)
 - Only counted bounds labelled with a menu id feed P. This closes the `in_prior` hole:
   a free-form label, or a wide bound with an excluded label, never enters P.
 
@@ -542,11 +547,14 @@ Each follows the stated intent as closely as the code allows.
 
 **Budgets in `run3`**
 - A5b runs as many whole clusters as `--budget-a5b` covers at the nominal cost: 5 + 5
-  + 9 calls per cluster of 5.
+  + 9 calls per cluster of 5 (4s − c for s problems in c clusters; 228 for 12 clusters).
+- The protocol's 228 is the expected count, not a cap. `--budget-a5b` is a safety cap,
+  default 285: the same 25% slack for retries as A4b's 600 over 480. With 12 clusters
+  built, the run still has 12 clusters and 228 nominal calls; the slack is spent only
+  on retries. (Revised in review: the build set the cap at exactly 228, so one retry
+  could cut a problem from N1 or N2.)
 - Each condition may spend whatever slack remains after the later conditions' nominal
-  calls are reserved.
-- At the protocol's 228 there is no slack, so a retry can cut N2's last problem. The
-  report pairs only what exists.
+  calls are reserved. The report pairs only what exists.
 
 **Signals and tests**
 - **M0** is the leave-one-out frequency within the primary population for the AUC tests.
@@ -595,6 +603,13 @@ Each follows the stated intent as closely as the code allows.
 - `run3` refuses a model alias. Its probe call aborts unless the CLI reports the pinned
   id (`claude-sonnet-5-5`).
 - Every call row records the problem, the requested model and the returned model.
+- Added in review: `run3 --phase a5b|a4b` runs one arm and builds only what it needs,
+  so the arms can run as two routines. The arms share no state: separate stores, and
+  A4b's P reads only its own store. `run3` never resumes. It refuses an out directory
+  whose store for the phase already has rows, so a rerun cannot double-count. After a
+  backend error (not a parse error) it waits 30 s before the retry, and 6 backend
+  errors in a row stop the run with exit code 4. The reports are still written from
+  what was stored. Retries still count against the budget, as before.
 
 ## Known limits
 

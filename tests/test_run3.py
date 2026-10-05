@@ -170,6 +170,34 @@ def test_prior_full_rules(tmp_path):
     assert prior_full(Store(tmp_path / "e", "mock"), "setfam", None, "m") == ([], "none")
 
 
+def test_prior_full_fills_from_the_family_ranking(tmp_path):
+    """PROTOCOL.md A4b step 2 is an ordered fill up to 2: the parent's winning bridges,
+    then the family's ranking (run 2's rule), skipping bridges already in P."""
+    st = Store(tmp_path / "s", "mock")
+
+    def w(problem, bridge, g, family="setfam", win=True):
+        st.append("weaves", {"run": "r", "problem": problem, "bridge_id": bridge, "family": family, "win": win,
+                             "by": "m", "status": "consistent", "n_max": 6, "values": {"6": g}, "counted": True})
+
+    # family ranking: double_counting wins on 3 problems, translates on 2, charvec_fp on 1
+    for i in range(3):
+        w(f"x{i}", "double_counting", 9)
+    for i in range(2):
+        w(f"y{i}", "translates", 9)
+    w("par", "charvec_fp", 7)            # the parent's only win
+    w("par", "probabilistic", 5, win=False)
+    assert prior_full(st, "setfam", "par", "m") == (["charvec_fp", "double_counting"], "parent+family")
+    # the parent's win is the family's top bridge: the fill takes the next one
+    w("par2", "double_counting", 8)
+    assert prior_full(st, "setfam", "par2", "m") == (["double_counting", "translates"], "parent+family")
+    # a seed (no parent) gets the family's top 2
+    assert prior_full(st, "setfam", None, "m") == (["double_counting", "translates"], "family")
+    # a parent with no win falls through to the family's ranking
+    assert prior_full(st, "setfam", "x-none", "m") == (["double_counting", "translates"], "family")
+    # another family's wins never fill this family's P
+    assert prior_full(st, "addfree", None, "m") == ([], "none")
+
+
 def test_full_breadth_end_to_end(tmp_path, capsys):
     seeds = _seed_file(tmp_path)
     store = tmp_path / "a4b"
@@ -409,3 +437,101 @@ def test_run3_refuses_alias_and_aborts_on_failed_probe(tmp_path, monkeypatch, ca
     assert rc == 3
     assert "probe call to the mock backend failed" in capsys.readouterr().err
     assert not (tmp_path / "o" / "a5b").exists()
+
+
+# ---- review fixes (judge, before the cloud run) -----------------------------------------
+def test_a5b_plan_counts_four_s_minus_c():
+    """N0 s + N1 s + N2 (s predicts + s - c explains) = 4s - c; a budget below that for
+    all clusters must run fewer clusters, never starve N0 or N2."""
+    from mathexp.run3 import a5b_plan
+
+    data = {"clusters": [{"order": i, "members": [0] * 5} for i in range(12)]}
+    assert a5b_plan(data, 228, None) == (12, [60, 60, 108])
+    assert a5b_plan(data, 285, None) == (12, [60, 60, 108])
+    assert a5b_plan(data, 227, None)[0] == 11
+    assert a5b_plan(data, 200, None) == (10, [50, 50, 90])
+    for b in range(0, 300, 7):
+        c, nom = a5b_plan(data, b, None)
+        assert sum(nom) <= b
+
+
+def _run3_args(out, cache, *extra):
+    return ["run3", "--backend", "mock", "--out", str(out), "--parents", "1", "--children", "2", "--draws", "20",
+            "--budget-a5b", "30", "--budget-a4b", "25", "--max-problems", "3", "--no-precompute-seeds",
+            "--cache", str(cache), *extra]
+
+
+def test_run3_refuses_a_rerun_into_a_used_out_dir(tmp_path, capsys):
+    out, cache = tmp_path / "run3", tmp_path / "cache" / "truth.json"
+    assert main(_run3_args(out, cache)) == 0
+    before = {p.name: p.read_bytes() for p in (out / "a5b").glob("*.jsonl")}
+    summary = (out / "run3_summary.json").read_bytes()
+    capsys.readouterr()
+    assert main(_run3_args(out, cache)) == 3
+    assert "does not resume" in capsys.readouterr().err
+    assert {p.name: p.read_bytes() for p in (out / "a5b").glob("*.jsonl")} == before
+    assert (out / "run3_summary.json").read_bytes() == summary
+
+
+def test_run3_phases_build_only_what_they_need(tmp_path):
+    cache = tmp_path / "cache" / "truth.json"
+    a = tmp_path / "a5b-only"
+    assert main(_run3_args(a, cache, "--phase", "a5b")) == 0
+    assert (a / "clusters.json").exists() and not (a / "a4b_seeds.jsonl").exists()
+    assert (a / "a5b_report.txt").exists() and not (a / "a4b").exists()
+    assert json.loads((a / "run3_summary-a5b.json").read_text(encoding="utf-8"))["a5b"]["clusters"] == 2
+    b = tmp_path / "a4b-only"
+    assert main(_run3_args(b, cache, "--phase", "a4b")) == 0
+    assert (b / "a4b_seeds.jsonl").exists() and not (b / "clusters.json").exists()
+    assert (b / "a4b_report.txt").exists() and not (b / "a5b").exists()
+    # the A4b phase can then run in the A5b phase's directory without touching A5b's files
+    a5b_rows = (a / "a5b" / "calls.jsonl").read_bytes()
+    assert main(_run3_args(a, cache, "--phase", "a4b")) == 0
+    assert (a / "a5b" / "calls.jsonl").read_bytes() == a5b_rows and (a / "a4b_report.txt").exists()
+    assert main(_run3_args(a, cache, "--phase", "a4b")) == 3  # but not twice
+
+
+def test_run3_stops_when_the_backend_is_down(tmp_path, monkeypatch, capsys):
+    """After the probe call, a backend that keeps failing stops the run after
+    MAX_BACKEND_ERRORS calls instead of spending the budget; the reports still exist."""
+    from mathexp import run3 as r3
+    from mathexp.llm import LLMError
+
+    class DiesAfterPing(MockBackend):
+        def complete(self, system, prompt, json_schema=None, context=None):
+            if context and context.get("step") != "ping":
+                raise LLMError("usage limit reached")
+            return super().complete(system, prompt, json_schema, context)
+
+    monkeypatch.setattr(r3, "make_backend", lambda *a, **k: DiesAfterPing())
+    out = tmp_path / "run3"
+    assert main(_run3_args(out, tmp_path / "c" / "truth.json")) == 4
+    assert "backend errors in a row" in capsys.readouterr().err
+    calls = _rows(out / "a5b" / "calls.jsonl")
+    assert len(calls) == r3.MAX_BACKEND_ERRORS and not any(c["parse_ok"] for c in calls)
+    assert (out / "a5b_report.txt").exists() and not (out / "a4b").exists()
+    assert "aborted" in json.loads((out / "run3_summary.json").read_text(encoding="utf-8"))
+
+
+def test_get_witness_never_overwrites_a_known_value(tmp_path):
+    """A value cached without a witness (an older cache) whose witness recompute times
+    out under a smaller limit keeps its value."""
+    cache = TruthCache(tmp_path / "truth.json")
+    spec = {"p": 2, "size_mod": [1], "int_mod": [0], "ns": [3, 4, 5, 6]}
+    key = f"{A.problem_id(spec)}:6"
+    cache.data[key] = {"value": 999, "seconds": 1.0, "time_limit": 20.0, "family": "setfam"}
+
+    class Slow(type(A)):
+        def truth_witness(self, spec, n, time_limit):
+            return None, None
+
+    v, w = cache.get_witness(Slow(), spec, 6, 0.001)
+    assert (v, w) == (999, None) and cache.data[key]["value"] == 999
+
+
+def test_store_reads_past_a_truncated_last_line(tmp_path):
+    st = Store(tmp_path / "s", "mock")
+    st.append("calls", {"a": 1})
+    with st.path("calls").open("a", encoding="utf-8") as fh:
+        fh.write('{"a": 2, "b": ')  # killed mid-append
+    assert st.rows("calls") == [{"a": 1}]

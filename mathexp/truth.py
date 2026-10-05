@@ -105,5 +105,15 @@ class TruthCache:
             return hit["value"], w
         if hit is not None and hit["value"] is None and hit["time_limit"] >= time_limit:
             return None, None
+        if hit is not None and hit["value"] is not None:
+            # a value cached without a witness: recompute for the witness only, so a
+            # timeout under a smaller limit never overwrites the known value
+            value, witness = family.truth_witness(spec, n, time_limit)
+            if value is None:
+                return hit["value"], None
+            if value != hit["value"]:
+                raise RuntimeError(f"{key}: recomputed {value}, cached {hit['value']}")
+            self._put_witness(key, witness)
+            return value, witness
         value, witness, _ = self._compute(family, spec, n, key, time_limit)
         return value, witness
