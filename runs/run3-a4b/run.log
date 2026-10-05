@@ -1,0 +1,51 @@
+== run 3 (a4b): build -> runs/run3-a4b
+A4b seeds: 39 (phase a4b: no clusters built)
+witnesses at n_max: 39
+build wall 6.7s
+probe call ok: model claude-haiku-4-5-20251001 in 10.34s
+== A4b: up to 80 completed problems, budget 600 calls
+problem e16149c360b2 (scan): setfam {"p": 3, "size_mod": [1], "int_abs": [0, 2]}
+  f = {3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 14}  surprise mean=0.11 bits max=0.29 bits
+  weave[1/probe] multilinear_poly+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[]
+  weave[2/probe] multilinear_poly+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[]
+  weave[3/wide3] slice_rank+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[]
+problem 1f9a2d314d09 (scan): addfree {"group": "cyclic", "equation": {"a": 1, "b": 1, "c": 3}, "equation2": {"a": 1, "b": 2, "c": 3}}
+  f = {4: 2, 5: 2, 6: 2, 7: 2, 8: 2, 9: 2, 10: 2, 11: 2, 12: 3, 13: 3, 14: 3, 15: 3, 16: 4, 17: 4, 18: 4, 19: 4, 20: 4, 21: 4, 22: 4, 23: 4, 24: 5, 25: 5, 26: 5, 27: 5, 28: 5, 29: 5, 30: 5}  surprise mean=5.33 bits max=7.02 bits
+  weave[1/probe] fourier_indicator+pigeonhole: g = 'n - 1' -> consistent WIN tight_at=[]
+  weave[2/probe] fourier_indicator+pigeonhole: g = 'n-1' -> consistent WIN tight_at=[]
+  weave[3/wide3] translates+pigeonhole: g = '(n%2)*(n+1)/2 + (1-n%2)*(2*n+1)/3' -> consistent WIN tight_at=[]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['group', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
+problem fa9a20154a92 (scan): setfam {"p": 5, "size_mod": [1], "int_mod": [1, 4]}
+  f = {3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 4}  surprise mean=0.05 bits max=0.06 bits
+  weave[1/probe] multilinear_poly+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 2)' -> consistent tight_at=[]
+  weave[2/probe] multilinear_poly+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 2)' -> consistent tight_at=[]
+  weave[3/wide3] double_counting+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 2) + 1' -> consistent tight_at=[]
+problem 45d701038009 (scan): addfree {"group": "int", "equation": "sidon", "equation2": {"a": 3, "b": 1, "c": 1}}
+  f = {4: 2, 5: 3, 6: 3, 7: 3, 8: 4, 9: 4, 10: 4, 11: 4, 12: 4, 13: 5, 14: 5, 15: 5, 16: 5, 17: 5, 18: 5, 19: 5, 20: 5, 21: 6, 22: 6, 23: 6, 24: 6, 25: 6, 26: 6, 27: 6, 28: 6, 29: 7}  surprise mean=0.65 bits max=2.56 bits
+  weave[1/probe] translates+sidon_counting: g = 'floor((1+sqrt(8*n-7))/2)' -> consistent WIN tight_at=[5, 6, 8, 9, 10, 13, 14, 15, 21]
+  weave[2/probe] translates+sidon_counting: g = 'floor((1+sqrt(8*n-7))/2)' -> consistent WIN tight_at=[5, 6, 8, 9, 10, 13, 14, 15, 21]
+  weave[3/wide3] double_counting+sidon_counting: g = 'floor((1+sqrt(8*n-7))/2)' -> consistent WIN tight_at=[5, 6, 8, 9, 10, 13, 14, 15, 21]
+  weave[3/wide3] incidence_matrix+sidon_counting: g = 'floor((-1+sqrt(16*n-7))/2)' -> consistent WIN tight_at=[5]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['group', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
+problem 7a3ac310974d (scan): addfree {"group": "cyclic", "equation": "3ap", "equation2": {"a": 2, "b": 2, "c": 3}}
+  f = {4: 2, 5: 2, 6: 2, 7: 2, 8: 3, 9: 3, 10: 4, 11: 3, 12: 4, 13: 4, 14: 4, 15: 4, 16: 5, 17: 4, 18: 6, 19: 4, 20: 5, 21: 5, 22: 6, 23: 5, 24: 6, 25: 5, 26: 8, 27: 6, 28: 7, 29: 6, 30: 8}  surprise mean=3.1 bits max=7.64 bits
+  weave[1/probe] translates+disjoint_translates: g = 'floor(n/2)' -> consistent WIN tight_at=[4, 5]
+  weave[2/probe] translates+disjoint_translates: g = 'n/2' -> consistent WIN tight_at=[4, 5]
+  weave[3/wide3] charvec_fp+dim_independent: g = 'n-1' -> consistent WIN tight_at=[]
+  weave[3/wide3] orbit_averaging+pigeonhole: g = 'ceil(3*n/4)+1' -> consistent WIN tight_at=[]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['group', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
+problem 4299207e3f24 (scan): addfree {"group": "cyclic", "equation": {"a": 1, "b": 1, "c": 2}, "equation2": {"a": 2, "b": 2, "c": 1}}
+  f = {4: 1, 5: 2, 6: 2, 7: 2, 8: 2, 9: 3, 10: 3, 11: 3, 12: 3, 13: 4, 14: 4, 15: 4, 16: 4, 17: 4, 18: 4, 19: 4, 20: 5, 21: 5, 22: 5, 23: 4, 24: 5, 25: 5, 26: 5, 27: 5, 28: 5, 29: 5, 30: 6}  surprise mean=2.99 bits max=8.13 bits
+  weave[1/probe] translates+disjoint_translates: g = 'n/2' -> consistent WIN tight_at=[5]
+  weave[2/probe] translates+disjoint_translates: g = 'ceil(n/2)' -> consistent WIN tight_at=[]
+  weave[3/wide3] double_counting+pigeonhole: g = '(n+1)//2' -> consistent WIN tight_at=[]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['group', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
+problem 38187748b625 (scan): addfree {"group": "cyclic", "equation": {"a": 2, "b": 2, "c": 1}, "equation2": {"a": 2, "b": 3, "c": 3}}

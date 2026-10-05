@@ -1,0 +1,3 @@
+A4b seeds: 39 (phase a4b: no clusters built)
+witnesses at n_max: 39
+build wall 6.7s
