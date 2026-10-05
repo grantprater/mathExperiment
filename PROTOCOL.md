@@ -168,13 +168,37 @@ principle behind it is interestingness = compression progress (Schmidhuber).
   - The search is bottom-up enumeration up to a size cap, merging expressions with equal
     value vectors.
   - A sequence with no expression under the cap gets G = cap + 1.
-- **Golf jump** J = G(f at every computed n) − G(f at every n but the largest). In
-  words: how much longer the shortest description gets when the last value arrives.
-- **Scan score** = J / L. Every spec up to a length cap is enumerated, brute-forced and
+- **Golf jump** J = G(f at every computed n) − G(f at every n but the largest). Kept as
+  a reference column only; the scan score below replaces it.
+- **Occam surprise S, the scan's model-free surprise** (revised after the first scan;
+  see below):
+  - Walk through the sequence in prequential order. For each k ≥ 4, take the
+    minimal-size expressions that match f at the first k values of n. Together they
+    predict the (k+1)-th value.
+  - A prediction counts only if the prefix genuinely **compresses**:
+    b · G_k < Λ_k, where
+    - b = log2(16) = 4 bits per node (16 grammar symbols: 4 terminals, 10 binary, 2 unary);
+    - Λ_k = Σ_{i<k} log2(trivial(n_i) + 1) is the cost of stating those k values
+      literally.
+  - A **break** at k means the prefix compresses and no minimal expression predicts
+    f at the next value. The break costs log2(trivial(n) + 1) bits for that next n.
+  - S is the sum of break costs over the sequence.
+- **Scan score** = S / L. Every spec up to a length cap is enumerated, brute-forced and
   golfed.
   - A spec with fewer than 4 computed values is refused.
+  - A spec with **no interaction** is dropped: f(n) = trivial(n) at every computed n,
+    meaning the conditions never constrain each other.
   - Specs with identical f sequences keep only the shortest statement.
-  - The top K, with a per-family quota, become run 2's problems.
+  - Only specs with S > 0 are eligible. The top K, with a per-family quota, become run 2's
+    problems. If fewer qualify, K shrinks and the report says so; zero-score fillers are
+    not used.
+- **Why S replaced J** (decided after the first scan and before any run-2 model call):
+  - On family B's 27-value sequences almost nothing golfs under the cap, so J was 0 for
+    267 of 270 specs. The prequential walk finds a break wherever it happens, not only at
+    the last n.
+  - Size 7–8 witnesses fitted 5 values by coincidence. The compression guard (an
+    expression must be shorter than the values it explains) removes them.
+  - Pure counting specs had f = trivial and are not extremal problems at all.
 - **Model surprise in bits.** For each n, the model gives a distribution over f(n): up to
   5 candidate values with probabilities, plus residual mass. Any value it did not list
   gets an equal share of the residual over the remaining values in [0, trivial(n)].
