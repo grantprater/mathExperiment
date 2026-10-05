@@ -382,3 +382,14 @@ problem 4ae554d07060 (variant): addfree {"group": "int", "equation": {"a": 1, "b
 problem c9ea9b438743 (variant): addfree {"group": "cyclic", "equation": {"a": 1, "b": 2, "c": 1}, "equation2": {"a": 1, "b": 2, "c": 3}}
   f = {4: 1, 5: 1, 6: 2, 7: 2, 8: 2, 9: 2, 10: 2, 11: 3, 12: 3, 13: 3, 14: 3, 15: 3, 16: 3, 17: 3, 18: 3, 19: 3, 20: 3, 21: 3, 22: 4, 23: 4, 24: 4, 25: 4, 26: 4, 27: 4, 28: 5, 29: 5, 30: 5}  surprise mean=4.37 bits max=7.85 bits
 problem 4fbf5042559c (scan): addfree {"group": "int", "equation": "3ap", "equation2": {"a": 1, "b": 3, "c": 2}}
+  f = {4: 2, 5: 3, 6: 3, 7: 3, 8: 3, 9: 4, 10: 4, 11: 4, 12: 5, 13: 5, 14: 6, 15: 6, 16: 6, 17: 6, 18: 6, 19: 6, 20: 7, 21: 7, 22: 7, 23: 7, 24: 7, 25: 8, 26: 8, 27: 8, 28: 8, 29: 8, 30: 9}  surprise mean=3.1 bits max=7.45 bits
+problem 14c06bccd334 (variant): addfree {"group": "int", "equation": {"a": 2, "b": 1, "c": 2}, "equation2": {"a": 1, "b": 3, "c": 2}}
+  f = {4: 2, 5: 2, 6: 3, 7: 3, 8: 4, 9: 4, 10: 5, 11: 5, 12: 5, 13: 6, 14: 6, 15: 6, 16: 7, 17: 7, 18: 7, 19: 8, 20: 8, 21: 8, 22: 9, 23: 9, 24: 9, 25: 10, 26: 10, 27: 10, 28: 11, 29: 11, 30: 11}  surprise mean=2.31 bits max=8.02 bits
+problem de924ec2f94c (variant): addfree {"group": "int", "equation": {"a": 1, "b": 2, "c": 3}, "equation2": {"a": 1, "b": 3, "c": 2}}
+  f = {4: 2, 5: 3, 6: 3, 7: 3, 8: 4, 9: 4, 10: 4, 11: 4, 12: 5, 13: 5, 14: 5, 15: 6, 16: 6, 17: 6, 18: 6, 19: 6, 20: 7, 21: 7, 22: 8, 23: 8, 24: 8, 25: 8, 26: 8, 27: 8, 28: 9, 29: 9, 30: 9}  surprise mean=2.2 bits max=5.97 bits
+problem 12f857ca1fa0 (variant): addfree {"group": "int", "equation": "3ap"}
+  f = {4: 3, 5: 4, 6: 4, 7: 4, 8: 4, 9: 5, 10: 5, 11: 6, 12: 6, 13: 7, 14: 8, 15: 8, 16: 8, 17: 8, 18: 8, 19: 8, 20: 9, 21: 9, 22: 9, 23: 9, 24: 10, 25: 10, 26: 11, 27: 11, 28: 11, 29: 11, 30: 12}  surprise mean=0.06 bits max=0.12 bits
+problem c7e7bc64ab80 (variant): addfree {"group": "cyclic", "equation": "3ap", "equation2": {"a": 1, "b": 3, "c": 2}}
+  f = {4: 1, 5: 2, 6: 2, 7: 2, 8: 2, 9: 3, 10: 3, 11: 3, 12: 3, 13: 3, 14: 3, 15: 3, 16: 4, 17: 3, 18: 6, 19: 3, 20: 4, 21: 4, 22: 5, 23: 4, 24: 6, 25: 5, 26: 6, 27: 6, 28: 5, 29: 5, 30: 6}  surprise mean=1.94 bits max=6.82 bits
+run a5b-N2: 60 problems (0 completed), 108 calls, store runs/run3-a5b/a5b
+A5b done: 228 calls
