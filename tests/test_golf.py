@@ -1,3 +1,5 @@
+import math
+
 import pytest
 
 from mathexp.golf import BINARY_FN, UNARY_FN, GolfTable, apply_vec, evaluate
@@ -87,3 +89,33 @@ def test_disk_cache(tmp_path):
     b = GolfTable((3, 4, 5, 6), 5, cache_dir=tmp_path)
     assert not a.loaded_from_cache and b.loaded_from_cache
     assert a.entries == b.entries and len(list(tmp_path.glob("*.pkl"))) == 1
+
+
+def test_occam_one_clean_break():
+    ns = tuple(range(1, 9))
+    t = GolfTable(ns, 6, cache_dir=None)
+    triv = [1000] * len(ns)  # each value costs log2(1001) ~ 10 bits literally
+    regular = [2 * n for n in ns]
+    assert t.occam(regular, triv)["S"] == 0  # n + n predicts every next value
+    bumped = regular[:-1] + [99]
+    o = t.occam(bumped, triv)
+    assert len(o["breaks"]) == 1
+    b = o["breaks"][0]
+    assert b["n"] == 8 and b["G"] == 3 and b["actual"] == 99 and b["predicted"] == 16
+    assert evaluate(b["witness"], 8) == 16 and b["Lambda"] > 4 * b["G"]
+    assert o["S"] == pytest.approx(math.log2(1001))
+    # the steps before the break compress and predict correctly
+    assert all(st["compresses"] and st["predicted_ok"] for st in o["steps"][:-1])
+
+
+def test_occam_guard_blocks_coincidental_fits():
+    """A tiny-valued sequence: any expression fitting the prefix is no shorter than the
+    values it explains (trivial = 1, so Lambda_k = k bits < 4 bits per node)."""
+    ns = tuple(range(1, 9))
+    t = GolfTable(ns, 6, cache_dir=None)
+    seq = [0, 1, 1, 0, 1, 0, 0, 1]
+    o = t.occam(seq, [1] * 8)
+    assert o["S"] == 0 and not o["breaks"]
+    assert not any(st["compresses"] for st in o["steps"])
+    # the same fits with expensive values would compress and break
+    assert t.occam([1, 1, 1, 1, 1, 7, 1, 1], [1000] * 8)["S"] > 0

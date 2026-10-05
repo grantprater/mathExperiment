@@ -36,12 +36,16 @@ from pathlib import Path
 from . import REPO
 
 GOLF_VERSION = "golf-v1"
-#: Chosen by measurement (see RESULTS.md "Run 2 scan"): cap 11 on ns 3..8 needs 2.6 GB.
+#: Chosen by measurement (see RESULTS.md "Run 2 scan"): cap 11 on ns 3..8 peaks at 1.84 GB.
 DEFAULT_CAP = 10
 MAX_ABS = 10 ** 9
 MAX_EXP = 30
 MAX_COMB = 200
 CACHE_DIR = REPO / "cache" / "golf"
+#: Occam surprise: first prequential step (k known values, predict the next) and the
+#: cost of one grammar node, log2(16 symbols: 4 terminals, 10 binary, 2 unary).
+OCCAM_MIN_K = 4
+BITS_PER_NODE = 4.0
 
 TERMINALS = ("n", "1", "2", "3")
 COMMUTATIVE = ("+", "*", "min", "max")
@@ -327,6 +331,62 @@ class GolfTable:
         predicts the last value."""
         r = self.jump(seq)
         return {"G": r["G_prefix"], "witness": r["witness_prefix"], "predicts_last": r["predicts_last"]}
+
+    # ---- Occam surprise (PROTOCOL.md "Run 2": Occam surprise S) ----------------------
+    def _matrix(self):
+        """(values, sizes, keys): an (entries x len(ns)) int32 matrix in entry order, the
+        sizes as int8, and the keys (for witnesses). Built once per table (numpy)."""
+        if getattr(self, "_mat", None) is None:
+            import numpy as np
+
+            keys = list(self.entries)
+            vals = np.frombuffer(b"".join(keys), dtype=np.int32).reshape(len(keys), len(self.ns))
+            sizes = np.fromiter((self.entries[k][0] for k in keys), dtype=np.int8, count=len(keys))
+            self._mat = (vals, sizes, keys)
+        return self._mat
+
+    def occam(self, seq, trivials, min_k: int = OCCAM_MIN_K, bits_per_node: float = BITS_PER_NODE) -> dict:
+        """Prequential walk. For k = min_k .. len(seq) - 1 (0-based: the first k values
+        are known, f[k] is next): G_k is the minimal size over entries equal to seq on
+        the first k components, and those minimal entries predict their value at k.
+        The prefix compresses iff bits_per_node * G_k < Lambda_k = sum_{i<k}
+        log2(trivial_i + 1). A break: the prefix compresses and f[k] is not among the
+        predicted values; it costs log2(trivial_k + 1). S = sum of break costs.
+        A prefix with no matching entry (G_k = cap + 1) predicts nothing: no break."""
+        import numpy as np
+
+        vals, sizes, keys = self._matrix()
+        seq = [int(x) for x in seq]
+        if len(seq) > len(self.ns) or len(trivials) != len(seq):
+            raise ValueError("sequence and trivial bounds must align with ns")
+        costs = [math.log2(t + 1) for t in trivials]
+        idx = np.arange(len(keys))
+        breaks, steps = [], []
+        lam = 0.0
+        for k in range(len(seq)):
+            if k >= min_k and idx.size:
+                sz = sizes[idx]
+                g = int(sz.min())
+                best = idx[sz == g]
+                predicted = vals[best, k]
+                compresses = bits_per_node * g < lam
+                hit = bool((predicted == seq[k]).any()) if abs(seq[k]) <= MAX_ABS else False
+                steps.append({"k": k, "n": self.ns[k], "G": g, "Lambda": round(lam, 3),
+                              "compresses": compresses, "predicted_ok": hit})
+                if compresses and not hit:
+                    w = int(best[0])
+                    breaks.append({"k": k, "n": self.ns[k], "G": g, "cost": costs[k],
+                                   "witness": self.expr(keys[w]), "predicted": int(vals[w, k]),
+                                   "actual": seq[k], "Lambda": lam})
+            elif k >= min_k:
+                steps.append({"k": k, "n": self.ns[k], "G": self.cap + 1, "Lambda": round(lam, 3),
+                              "compresses": False, "predicted_ok": False})
+            lam += costs[k]
+            if abs(seq[k]) > MAX_ABS:
+                idx = idx[:0]
+            elif idx.size:
+                idx = idx[vals[idx, k] == seq[k]]
+        return {"S": sum(b["cost"] for b in breaks), "breaks": breaks, "steps": steps}
 
     def stats(self) -> dict:
         return {"ns": list(self.ns), "cap": self.cap, "entries": len(self.entries),

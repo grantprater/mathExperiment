@@ -57,7 +57,7 @@ mathexp/
   problems/clique.py   bitset branch-and-bound max clique (Tomita-style colouring bound)
   truth.py             brute-force cache: cache/truth.json (gitignored)
   golf.py              golf length G(seq): bottom-up enumeration, cached tables, jump J
-  scan.py              run 2 scan: enumerate specs, brute-force, golf, score J/L, select top K
+  scan.py              run 2 scan: enumerate specs, brute-force, golf, Occam surprise S, score S/L, select top K (S > 0)
   checking.py          weave statuses: violated / consistent / insufficient / error, tight_at, win
   safe_eval.py         AST-allowlist evaluator for bound expressions (no eval/exec)
   store.py             append-only JSONL ledgers + refusals (a) and (b)

@@ -7,13 +7,16 @@ cap is:
 2. brute-forced on the family's scan ns, in increasing n, stopping at the first
    timeout (cached in ``cache/scan_truth.jsonl``, append-only, so a scan resumes);
 3. refused if fewer than ``MIN_VALUES`` values were computed;
-4. deduplicated by truth sequence: among specs with the same (ns, f) sequence only the
+4. dropped if it has no interaction: f(n) = trivial(n) at every computed n;
+5. deduplicated by truth sequence: among specs with the same (ns, f) sequence only the
    shortest statement is kept (ties: the lexicographically smallest canonical JSON);
-5. golfed: J = G(full) - G(all but the last value), score = J / L.
+6. golfed: Occam surprise S (prequential breaks behind a compression guard, see
+   ``GolfTable.occam``), score = S / L. The golf jump J is kept as a reference column.
 
 Outputs: ``scan/<family>.jsonl`` (every scored spec, with ``kept`` / ``dup_of`` for the
 truth-sequence dedup), ``scan/summary.json``, and ``scan/selected.jsonl``: the top K by
-score with a per-family quota, built from every ``scan/<family>.jsonl`` present.
+score with a per-family quota, S > 0 only (no zero-score fillers), built from every
+``scan/<family>.jsonl`` present.
 """
 
 from __future__ import annotations
@@ -175,14 +178,18 @@ def scan_family(fam: Family, max_len: int, time_limit: float, cache: ScanTruthCa
     log(f"[{fam.name}] {counts['enumerated']} specs up to L={max_len} "
         f"({counts['generated']} generated, {counts['invalid']} invalid, "
         f"{counts['duplicate_id']} duplicate ids, {counts['over_len']} over the cap)")
-    rows, refused = [], 0
+    rows, refused, no_interaction = [], 0, 0
     for i, spec in enumerate(specs):
         ns, vals = truth_sequence(fam, spec, cache, time_limit)
         if len(vals) < MIN_VALUES:
             refused += 1
             continue
+        trivial = [fam.trivial_bound(spec, n) for n in ns]
+        if vals == trivial:
+            no_interaction += 1
+            continue
         rows.append({"family": fam.name, "id": fam.problem_id(spec), "spec": spec,
-                     "L": fam.statement_length(spec), "ns": ns, "truth": vals,
+                     "L": fam.statement_length(spec), "ns": ns, "truth": vals, "trivial": trivial,
                      "statement": fam.render(spec), "_canon": _canon_json(fam, spec)})
         if (i + 1) % 200 == 0:
             log(f"  truth {i + 1}/{len(specs)}  computed {cache.computed} values in "
@@ -210,7 +217,11 @@ def scan_family(fam: Family, max_len: int, time_limit: float, cache: ScanTruthCa
         res = table.jump_many([r["truth"] for r in rs])
         for r, g in zip(rs, res):
             r.update(g)
-            r["score"] = r["J"] / r["L"]
+            occ = table.occam(r["truth"], r["trivial"])
+            r["S"] = occ["S"]
+            r["breaks"] = occ["breaks"]
+            r["first_compressing_n"] = next((st["n"] for st in occ["steps"] if st["compresses"]), None)
+            r["score"] = r["S"] / r["L"]
         st = table.stats()
         st["match_seconds"] = round(time.perf_counter() - tg - (0 if st["cached"] else st["build_seconds"]), 2)
         st["sequences"] = len(rs)
@@ -219,14 +230,15 @@ def scan_family(fam: Family, max_len: int, time_limit: float, cache: ScanTruthCa
         del table
     for r in rows:
         r.pop("_canon", None)
-    rows.sort(key=lambda r: (-r["score"], -r["J"], r["L"], r["id"]))
+    rows.sort(key=lambda r: (-r["score"], -r["S"], r["L"], r["id"]))
     out_dir.mkdir(parents=True, exist_ok=True)
     with (out_dir / f"{fam.name}.jsonl").open("w", encoding="utf-8") as fh:
         for r in rows:
             fh.write(json.dumps(r, ensure_ascii=False) + "\n")
     kept = [r for r in rows if r["kept"]]
     summary = {"family": fam.name, "max_len": max_len, "time_limit": time_limit, "golf_cap": golf_cap,
-               **counts, "refused_uncheckable": refused, "scored": len(rows),
+               **counts, "refused_uncheckable": refused, "no_interaction_dropped": no_interaction,
+               "scored": len(rows),
                "truth_duplicates": len(rows) - len(kept), "kept": len(kept),
                "values_computed_this_run": cache.computed,
                "compute_seconds_this_run": round(cache.compute_seconds, 1),
@@ -240,36 +252,42 @@ def score_distribution(rows: list[dict], cap: int = DEFAULT_CAP) -> dict:
     if not rows:
         return {}
     scores = sorted(r["score"] for r in rows)
+    nb: dict[int, int] = {}
+    for r in rows:
+        nb[len(r["breaks"])] = nb.get(len(r["breaks"]), 0) + 1
     js: dict[int, int] = {}
     for r in rows:
         js[r["J"]] = js.get(r["J"], 0) + 1
 
     def q(p):
         return round(scores[min(len(scores) - 1, int(p * len(scores)))], 3)
-    return {"n": len(scores), "positive": sum(1 for s in scores if s > 0), "max": round(scores[-1], 3),
-            "p50": q(0.5), "p90": q(0.9), "p99": q(0.99), "J_counts": dict(sorted(js.items())),
+    return {"n": len(scores), "S_positive": sum(1 for s in scores if s > 0), "max": round(scores[-1], 3),
+            "p50": q(0.5), "p90": q(0.9), "p99": q(0.99), "break_counts": dict(sorted(nb.items())),
+            "never_compresses": sum(1 for r in rows if r["first_compressing_n"] is None),
+            "J_counts": dict(sorted(js.items())),
             "G_full_at_cap_plus_1": sum(1 for r in rows if r["G_full"] > cap),
             "predicts_last": sum(1 for r in rows if r["predicts_last"])}
 
 
 def select(out_dir: Path = SCAN_DIR, top: int = DEFAULT_TOP, quota: int = DEFAULT_QUOTA) -> list[dict]:
-    """Top ``top`` kept specs by score, at most ``quota`` per family; written to
-    ``selected.jsonl`` with a 1-based rank."""
+    """Top ``top`` kept specs with S > 0 by score (ties: S, then L, then id), at most
+    ``quota`` per family and no zero-score fillers; written to ``selected.jsonl`` with a
+    1-based rank."""
     picked = []
     for name in FAMILY_ORDER:
         p = out_dir / f"{name}.jsonl"
         if not p.exists():
             continue
         rows = [json.loads(x) for x in p.read_text(encoding="utf-8").splitlines() if x.strip()]
-        rows = [r for r in rows if r["kept"]]
-        rows.sort(key=lambda r: (-r["score"], -r["J"], r["L"], r["id"]))
+        rows = [r for r in rows if r["kept"] and r["S"] > 0]
+        rows.sort(key=lambda r: (-r["score"], -r["S"], r["L"], r["id"]))
         picked += rows[:quota]
-    picked.sort(key=lambda r: (-r["score"], -r["J"], r["L"], r["family"], r["id"]))
+    picked.sort(key=lambda r: (-r["score"], -r["S"], r["L"], r["family"], r["id"]))
     picked = picked[:top]
     out = []
     for i, r in enumerate(picked, 1):
-        out.append({"rank": i, "family": r["family"], "id": r["id"], "score": r["score"], "J": r["J"],
-                    "L": r["L"], "G_full": r["G_full"], "G_prefix": r["G_prefix"],
+        out.append({"rank": i, "family": r["family"], "id": r["id"], "score": r["score"], "S": r["S"],
+                    "breaks": r["breaks"], "J": r["J"], "L": r["L"], "G_full": r["G_full"], "G_prefix": r["G_prefix"],
                     "witness_full": r["witness_full"], "witness_prefix": r["witness_prefix"],
                     "predicts_last": r["predicts_last"], "ns": r["ns"], "truth": r["truth"],
                     "spec": r["spec"], "statement": r["statement"]})
@@ -295,7 +313,8 @@ def run_scan(families: list[str], max_len: dict[str, int] | int | None, time_lim
     sel = select(out_dir, top, quota)
     summary["selection"] = {"top": top, "quota": quota, "selected": len(sel),
                             "by_family": {f: sum(1 for r in sel if r["family"] == f) for f in FAMILY_ORDER},
-                            "positive_score": sum(1 for r in sel if r["score"] > 0)}
+                            "short_of_quota": {f: max(0, min(quota, top) - sum(1 for r in sel if r["family"] == f))
+                                               for f in FAMILY_ORDER}}
     summary["last_wall_seconds"] = round(time.perf_counter() - t0, 1)
     out_dir.mkdir(parents=True, exist_ok=True)
     summ_path.write_text(json.dumps(summary, indent=1), encoding="utf-8")

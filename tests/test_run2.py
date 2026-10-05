@@ -26,12 +26,15 @@ def test_tiny_scan_end_to_end(tmp_path, monkeypatch):
                          golf_cache_dir=tmp_path / "golf")
     a, b = summ["setfam"], summ["addfree"]
     assert a["enumerated"] == 16 and b["enumerated"] == 6  # L <= 3 set families; int/cyclic named eqs
-    assert a["scored"] + a["refused_uncheckable"] == a["enumerated"]
+    assert a["scored"] + a["refused_uncheckable"] + a["no_interaction_dropped"] == a["enumerated"]
+    assert a["no_interaction_dropped"] > 0  # e.g. |A| = 1 alone: f(n) = n = trivial(n)
     assert b["refused_uncheckable"] == 0
     rows = _rows(out / "setfam.jsonl") + _rows(out / "addfree.jsonl")
     for r in rows:
         assert r["J"] == r["G_full"] - r["G_prefix"] >= 0
-        assert r["score"] == pytest.approx(r["J"] / r["L"])
+        assert r["score"] == pytest.approx(r["S"] / r["L"])
+        assert r["S"] == pytest.approx(sum(b["cost"] for b in r["breaks"]))
+        assert r["truth"] != r["trivial"]  # no-interaction specs are dropped
         assert len(r["truth"]) >= scan.MIN_VALUES
     # truth-sequence dedup keeps the shortest statement
     for r in rows:
@@ -40,6 +43,7 @@ def test_tiny_scan_end_to_end(tmp_path, monkeypatch):
             assert keeper["truth"] == r["truth"] and keeper["L"] <= r["L"]
     sel = _rows(out / "selected.jsonl")
     assert [s["rank"] for s in sel] == list(range(1, len(sel) + 1))
+    assert all(s["S"] > 0 for s in sel)  # no zero-score fillers
     assert len(sel) <= 6 and all(sum(1 for s in sel if s["family"] == f) <= 4 for f in ("setfam", "addfree"))
     assert all(sel[i]["score"] >= sel[i + 1]["score"] for i in range(len(sel) - 1))
     # resumable: a second pass computes nothing new
@@ -60,7 +64,7 @@ def _selected(tmp_path):
     with path.open("w", encoding="utf-8") as fh:
         for i, (fam, spec, ns) in enumerate(specs, 1):
             fh.write(json.dumps({"rank": i, "family": fam.name, "id": fam.problem_id(spec),
-                                 "score": 1.0 / i, "J": 5 - i, "L": fam.statement_length(spec),
+                                 "score": 1.0 / i, "S": 2.0 / i, "J": 5 - i, "L": fam.statement_length(spec),
                                  "ns": ns, "truth": [], "spec": spec}) + "\n")
     return path
 
@@ -117,7 +121,7 @@ def test_predict_only_notes_arms_then_report(tmp_path, capsys):
     out = capsys.readouterr().out
     assert "A5: notes" in out and "paired (notes - no notes) over 5 problems" in out
     assert "sign test p" in out and "tercile" in out
-    assert "Spearman(scan score J/L, mean bits)" in out and "n = 5" in out
+    assert "Spearman(scan score S/L, mean bits)" in out and "n = 5" in out
     assert "top1" in out and "distribution" in out
 
 

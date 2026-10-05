@@ -219,7 +219,7 @@ class Loop:
                 raise ValueError(f"scan problem {r['id']} hashes to {pid}; selection file is stale")
             items.append({"family": fam.name, "spec": spec, "id": pid, "parent": None, "what_if": None,
                           "provenance": "scan", "seed_name": None, "known_as": [],
-                          "scan_rank": r["rank"], "scan_score": r["score"], "scan_J": r["J"],
+                          "scan_rank": r["rank"], "scan_score": r["score"], "scan_S": r.get("S"), "scan_J": r["J"],
                           "scan_L": r["L"]})
         return items
 
@@ -301,7 +301,7 @@ class Loop:
                "breadth": None if self.cfg.predict_only else self.cfg.breadth, "policy": self.cfg.policy,
                "feedback": self.cfg.feedback, "menu": self.cfg.menu, "predict_only": self.cfg.predict_only,
                "notes": self.cfg.notes, "notes_shown": 0, "position": self.position,
-               **{k: item[k] for k in ("scan_rank", "scan_score", "scan_J", "scan_L") if k in item},
+               **{k: item[k] for k in ("scan_rank", "scan_score", "scan_S", "scan_J", "scan_L") if k in item},
                "truth": {}, "timings": {}, "surprise_unit": "bits", "bits": {}, "surprise": None,
                "surprise_max": None, "surprising": None, "prior_bridges": [], "prior_source": None,
                "mode": None, "escalated": False, "calls_used": 0, "stopped": None}

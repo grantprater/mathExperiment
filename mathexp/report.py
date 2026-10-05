@@ -222,15 +222,17 @@ def side_result(done: list[dict]) -> str:
     ps = [p for p in _a5_arms(done)[False] if p.get("scan_score") is not None]
     by_id: dict[str, dict] = {}
     for p in ps:
-        d = by_id.setdefault(p["id"], {"score": p["scan_score"], "J": p.get("scan_J"), "bits": []})
+        d = by_id.setdefault(p["id"], {"score": p["scan_score"], "S": p.get("scan_S"), "J": p.get("scan_J"),
+                                       "bits": []})
         d["bits"].append(p["surprise"])
-    rows = [(d["score"], d["J"], sum(d["bits"]) / len(d["bits"])) for d in by_id.values()]
+    rows = list(by_id.values())
     if not rows:
         lines.append("  (no scan problems in a no-notes predict-only run)")
         return "\n".join(lines)
-    for i, label in ((0, "scan score J/L"), (1, "golf jump J")):
-        rho = spearman([r[i] for r in rows], [r[2] for r in rows])
-        lines.append(f"  Spearman({label}, mean bits) = {'--' if rho is None else f'{rho:+.3f}'}  n = {len(rows)}")
+    for key, label in (("score", "scan score S/L"), ("S", "Occam surprise S"), ("J", "golf jump J")):
+        rs = [d for d in rows if d[key] is not None]
+        rho = spearman([d[key] for d in rs], [sum(d["bits"]) / len(d["bits"]) for d in rs])
+        lines.append(f"  Spearman({label}, mean bits) = {'--' if rho is None else f'{rho:+.3f}'}  n = {len(rs)}")
     return "\n".join(lines)
 
 
