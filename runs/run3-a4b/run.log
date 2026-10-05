@@ -49,3 +49,43 @@ problem 4299207e3f24 (scan): addfree {"group": "cyclic", "equation": {"a": 1, "b
   mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['group', 'p']"]
   mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
 problem 38187748b625 (scan): addfree {"group": "cyclic", "equation": {"a": 2, "b": 2, "c": 1}, "equation2": {"a": 2, "b": 3, "c": 3}}
+  f = {4: 1, 5: 1, 6: 2, 7: 2, 8: 2, 9: 2, 10: 2, 11: 2, 12: 4, 13: 2, 14: 4, 15: 4, 16: 4, 17: 3, 18: 6, 19: 3, 20: 5, 21: 6, 22: 4, 23: 4, 24: 8, 25: 5, 26: 5, 27: 6, 28: 8, 29: 5, 30: 10}  surprise mean=4.02 bits max=8.97 bits
+  weave[1/probe] translates+pigeonhole: g = 'n-1' -> consistent WIN tight_at=[]
+  weave[2/probe] translates+pigeonhole: g = 'n-1' -> consistent WIN tight_at=[]
+  weave[3/wide3] graph_spectrum+pigeonhole: g = '(n+1)/2*(n%2) + (n-2)*(1-n%2)' -> consistent WIN tight_at=[]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['group', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation', 'p']"]
+problem f5e002c40acf (scan): setfam {"p": 5, "size_mod": [2], "int_mod": [1], "int_min": 2}
+  f = {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 8}  surprise mean=0.05 bits max=0.07 bits
+  weave[1/probe] multilinear_poly+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 1)' -> consistent WIN tight_at=[]
+  weave[2/probe] multilinear_poly+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 1)' -> consistent WIN tight_at=[]
+  weave[3/wide3] graph_spectrum+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 1)' -> consistent WIN tight_at=[]
+  weave[3/wide3] double_counting+gram_rank: g = 'n' -> consistent WIN tight_at=[8]
+problem ece50aee9106 (scan): setfam {"p": 5, "size_mod": [2, 4], "int_mod": [2, 4]}
+  f = {3: 1, 4: 2, 5: 2, 6: 3, 7: 8, 8: 8}  surprise mean=0.22 bits max=0.62 bits
+  weave[1/probe] double_counting+pigeonhole: g = 'comb(n,2)+comb(n,4)+comb(n,7)+comb(n,9)' -> consistent tight_at=[]
+  weave[2/probe] double_counting+multilinear_dim+diagonal_criterion: g = 'min(2**n, binom_sum(n, 4))' -> consistent tight_at=[]
+  weave[3/wide3] multilinear_poly+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 4)' -> consistent tight_at=[]
+  weave[3/wide3] incidence_matrix+pigeonhole: g = 'comb(n,2)+comb(n,4)+comb(n,7)' -> consistent tight_at=[]
+problem 87b10e814823 (scan): addfree {"group": "cyclic", "equation": {"a": 1, "b": 1, "c": 2}, "equation2": {"a": 1, "b": 3, "c": 1}}
+  f = {4: 1, 5: 1, 6: 2, 7: 2, 8: 2, 9: 2, 10: 2, 11: 2, 12: 3, 13: 3, 14: 3, 15: 3, 16: 3, 17: 3, 18: 4, 19: 3, 20: 4, 21: 5, 22: 4, 23: 4, 24: 5, 25: 5, 26: 5, 27: 5, 28: 5, 29: 5, 30: 6}  surprise mean=2.34 bits max=8.32 bits
+  weave[1/probe] graph_spectrum+disjoint_translates: g = '(n/2)*(1+n%2)' -> consistent WIN tight_at=[]
+  weave[2/probe] graph_spectrum+pigeonhole: g = '(n+3)/2' -> consistent WIN tight_at=[]
+  weave[3/wide3] translates+disjoint_translates: g = 'max(3, n//2)' -> consistent WIN tight_at=[]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['group', 'p']"]
+  mutation rejected: ["mutation must change exactly one spec field (ns aside); changed ['equation2', 'p']"]
+problem 0adc5cb80773 (scan): setfam {"p": 3, "size_mod": [1], "int_mod": [1, 2]}
+  f = {3: 1, 4: 2, 5: 2, 6: 3, 7: 8, 8: 9}  surprise mean=0.46 bits max=2.32 bits
+  weave[1/probe] double_counting+multilinear_dim+dim_independent: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[]
+  weave[2/probe] double_counting+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[]
+  weave[3/wide3] charvec_fp+pigeonhole: g = '2**n/2' -> consistent tight_at=[]
+problem d6506a5c484f (scan): setfam {"p": 5, "size_mod": [1], "int_mod": [4]}
+  f = {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 4}  surprise mean=0.05 bits max=0.07 bits
+  weave[1/probe] graph_spectrum+diagonal_criterion+multilinear_dim+dim_independent: g = 'binom_sum(n, 1)' -> consistent WIN tight_at=[]
+  weave[2/probe] double_counting+gram_rank: g = 'n + 1' -> consistent WIN tight_at=[]
+  weave[3/wide3] multilinear_poly+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 1)' -> consistent WIN tight_at=[]
+  weave[3/wide3] incidence_matrix+gram_rank: g = 'n + 1' -> consistent WIN tight_at=[]
+problem a2de34342b6b (scan): setfam {"p": 5, "size_mod": [1], "int_mod": [0, 4]}
+  f = {3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 28}  surprise mean=0.04 bits max=0.07 bits
