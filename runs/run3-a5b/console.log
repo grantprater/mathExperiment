@@ -124,3 +124,48 @@ problem e16149c360b2 (scan): setfam {"p": 3, "size_mod": [1], "int_abs": [0, 2]}
 problem 5f739bd2ebb5 (variant): setfam {"p": 3, "size_mod": [0, 1], "int_abs": [0, 2]}
   f = {3: 4, 4: 5, 5: 6, 6: 7, 7: 9, 8: 15}  surprise mean=0.38 bits max=0.74 bits
 problem a214ce064d59 (variant): setfam {"p": 3, "size_mod": [1], "int_abs": [0, 2], "size_abs": [4]}
+  f = {3: 0, 4: 1, 5: 1, 6: 3, 7: 7, 8: 14}  surprise mean=0.06 bits max=0.09 bits
+problem 5e9ea843d6f9 (variant): setfam {"p": 3, "size_mod": [1], "int_abs": [0, 2], "int_mod": [1]}
+  f = {3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1}  surprise mean=0.04 bits max=0.04 bits
+problem 8b2d2a3b8a53 (variant): setfam {"p": 7, "size_mod": [1], "int_abs": [0, 2]}
+  f = {3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8}  surprise mean=0.05 bits max=0.06 bits
+problem 05534495f261 (scan): addfree {"group": "int", "equation": {"a": 1, "b": 2, "c": 1}, "equation2": {"a": 1, "b": 2, "c": 3}}
+  f = {4: 3, 5: 3, 6: 3, 7: 3, 8: 4, 9: 4, 10: 5, 11: 5, 12: 5, 13: 5, 14: 6, 15: 6, 16: 7, 17: 7, 18: 7, 19: 7, 20: 7, 21: 8, 22: 8, 23: 8, 24: 8, 25: 9, 26: 9, 27: 9, 28: 9, 29: 9, 30: 9}  surprise mean=2.86 bits max=6.49 bits
+problem 28f7dd5c40a3 (variant): addfree {"group": "int", "equation": {"a": 1, "b": 3, "c": 1}, "equation2": {"a": 1, "b": 2, "c": 3}}
+  f = {4: 3, 5: 3, 6: 3, 7: 4, 8: 4, 9: 4, 10: 5, 11: 5, 12: 5, 13: 6, 14: 7, 15: 7, 16: 7, 17: 7, 18: 8, 19: 8, 20: 8, 21: 9, 22: 9, 23: 9, 24: 9, 25: 9, 26: 9, 27: 9, 28: 9, 29: 10, 30: 10}  surprise mean=4.24 bits max=6.13 bits
+problem b4bf5492b593 (variant): addfree {"group": "int", "equation": {"a": 1, "b": 2, "c": 1}}
+  f = {4: 3, 5: 4, 6: 4, 7: 5, 8: 6, 9: 6, 10: 7, 11: 8, 12: 8, 13: 9, 14: 10, 15: 10, 16: 11, 17: 12, 18: 12, 19: 13, 20: 14, 21: 14, 22: 15, 23: 16, 24: 16, 25: 17, 26: 18, 27: 18, 28: 19, 29: 20, 30: 20}  surprise mean=0.81 bits max=1.32 bits
+problem 4ae554d07060 (variant): addfree {"group": "int", "equation": {"a": 1, "b": 1, "c": 1}, "equation2": {"a": 1, "b": 2, "c": 3}}
+  f = {4: 2, 5: 3, 6: 3, 7: 3, 8: 4, 9: 4, 10: 4, 11: 5, 12: 5, 13: 6, 14: 6, 15: 6, 16: 6, 17: 7, 18: 7, 19: 8, 20: 8, 21: 9, 22: 9, 23: 9, 24: 9, 25: 9, 26: 9, 27: 9, 28: 9, 29: 9, 30: 9}  surprise mean=2.15 bits max=7.08 bits
+problem c9ea9b438743 (variant): addfree {"group": "cyclic", "equation": {"a": 1, "b": 2, "c": 1}, "equation2": {"a": 1, "b": 2, "c": 3}}
+  f = {4: 1, 5: 1, 6: 2, 7: 2, 8: 2, 9: 2, 10: 2, 11: 3, 12: 3, 13: 3, 14: 3, 15: 3, 16: 3, 17: 3, 18: 3, 19: 3, 20: 3, 21: 3, 22: 4, 23: 4, 24: 4, 25: 4, 26: 4, 27: 4, 28: 5, 29: 5, 30: 5}  surprise mean=4.09 bits max=8.02 bits
+problem 4fbf5042559c (scan): addfree {"group": "int", "equation": "3ap", "equation2": {"a": 1, "b": 3, "c": 2}}
+  f = {4: 2, 5: 3, 6: 3, 7: 3, 8: 3, 9: 4, 10: 4, 11: 4, 12: 5, 13: 5, 14: 6, 15: 6, 16: 6, 17: 6, 18: 6, 19: 6, 20: 7, 21: 7, 22: 7, 23: 7, 24: 7, 25: 8, 26: 8, 27: 8, 28: 8, 29: 8, 30: 9}  surprise mean=3.59 bits max=7.41 bits
+problem 14c06bccd334 (variant): addfree {"group": "int", "equation": {"a": 2, "b": 1, "c": 2}, "equation2": {"a": 1, "b": 3, "c": 2}}
+  f = {4: 2, 5: 2, 6: 3, 7: 3, 8: 4, 9: 4, 10: 5, 11: 5, 12: 5, 13: 6, 14: 6, 15: 6, 16: 7, 17: 7, 18: 7, 19: 8, 20: 8, 21: 8, 22: 9, 23: 9, 24: 9, 25: 10, 26: 10, 27: 10, 28: 11, 29: 11, 30: 11}  surprise mean=2.47 bits max=4.32 bits
+problem de924ec2f94c (variant): addfree {"group": "int", "equation": {"a": 1, "b": 2, "c": 3}, "equation2": {"a": 1, "b": 3, "c": 2}}
+  f = {4: 2, 5: 3, 6: 3, 7: 3, 8: 4, 9: 4, 10: 4, 11: 4, 12: 5, 13: 5, 14: 5, 15: 6, 16: 6, 17: 6, 18: 6, 19: 6, 20: 7, 21: 7, 22: 8, 23: 8, 24: 8, 25: 8, 26: 8, 27: 8, 28: 9, 29: 9, 30: 9}  surprise mean=4.67 bits max=6.49 bits
+problem 12f857ca1fa0 (variant): addfree {"group": "int", "equation": "3ap"}
+  f = {4: 3, 5: 4, 6: 4, 7: 4, 8: 4, 9: 5, 10: 5, 11: 6, 12: 6, 13: 7, 14: 8, 15: 8, 16: 8, 17: 8, 18: 8, 19: 8, 20: 9, 21: 9, 22: 9, 23: 9, 24: 10, 25: 10, 26: 11, 27: 11, 28: 11, 29: 11, 30: 12}  surprise mean=0.1 bits max=0.32 bits
+problem c7e7bc64ab80 (variant): addfree {"group": "cyclic", "equation": "3ap", "equation2": {"a": 1, "b": 3, "c": 2}}
+  f = {4: 1, 5: 2, 6: 2, 7: 2, 8: 2, 9: 3, 10: 3, 11: 3, 12: 3, 13: 3, 14: 3, 15: 3, 16: 4, 17: 3, 18: 6, 19: 3, 20: 4, 21: 4, 22: 5, 23: 4, 24: 6, 25: 5, 26: 6, 27: 6, 28: 5, 29: 5, 30: 6}  surprise mean=6.95 bits max=30.0 bits
+run a5b-N0: 60 problems (0 completed), 60 calls, store runs/run3-a5b/a5b
+problem 2c81d0d691b0 (scan): setfam {"p": 3, "size_mod": [1], "int_mod": [1]}
+  f = {3: 1, 4: 2, 5: 2, 6: 2, 7: 4, 8: 4}  surprise mean=0.1 bits max=0.18 bits
+problem 643b5d4c9219 (variant): setfam {"p": 3, "size_mod": [0, 1], "int_mod": [1]}
+  f = {3: 2, 4: 2, 5: 3, 6: 4, 7: 7, 8: 7}  surprise mean=0.43 bits max=1.32 bits
+problem 00ce979a26cc (variant): setfam {"p": 3, "int_mod": [1]}
+  f = {3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8}  surprise mean=0.84 bits max=1.51 bits
+problem 070e75f7eb61 (variant): setfam {"p": 3, "size_mod": [1], "int_mod": [1], "size_abs": [4]}
+  f = {3: 0, 4: 1, 5: 1, 6: 1, 7: 2, 8: 2}  surprise mean=0.1 bits max=0.15 bits
+problem f4c966bb1b37 (variant): setfam {"p": 2, "size_mod": [1], "int_mod": [1]}
+  f = {3: 2, 4: 2, 5: 4, 6: 4, 7: 8, 8: 8}  surprise mean=0.06 bits max=0.06 bits
+problem 5a8c1dc9da5b (scan): addfree {"group": "cyclic", "equation": "sidon", "equation2": {"a": 3, "b": 3, "c": 3}}
+  f = {4: 1, 5: 2, 6: 2, 7: 2, 8: 2, 9: 2, 10: 2, 11: 3, 12: 2, 13: 3, 14: 3, 15: 3, 16: 3, 17: 3, 18: 3, 19: 4, 20: 4, 21: 3, 22: 4, 23: 4, 24: 4, 25: 4, 26: 4, 27: 4, 28: 4, 29: 4, 30: 4}  surprise mean=0.94 bits max=3.32 bits
+problem 49d121b60afd (variant): addfree {"group": "cyclic", "equation": "sumfree", "equation2": {"a": 3, "b": 3, "c": 3}}
+  f = {4: 2, 5: 2, 6: 3, 7: 2, 8: 4, 9: 3, 10: 5, 11: 4, 12: 6, 13: 4, 14: 7, 15: 6, 16: 8, 17: 6, 18: 9, 19: 6, 20: 10, 21: 6, 22: 11, 23: 8, 24: 12, 25: 10, 26: 13, 27: 9, 28: 14, 29: 10, 30: 15}  surprise mean=0.09 bits max=1.0 bits
+problem 978b0fa51983 (variant): addfree {"group": "cyclic", "equation": "sidon", "equation2": {"a": 1, "b": 2, "c": 3}}
+  f = {4: 2, 5: 2, 6: 2, 7: 2, 8: 2, 9: 2, 10: 2, 11: 2, 12: 2, 13: 3, 14: 3, 15: 3, 16: 3, 17: 3, 18: 3, 19: 3, 20: 4, 21: 3, 22: 3, 23: 3, 24: 4, 25: 4, 26: 4, 27: 4, 28: 4, 29: 4, 30: 4}  surprise mean=1.71 bits max=7.2 bits
+problem f915fac5a97e (variant): addfree {"group": "cyclic", "equation": "3ap", "equation2": {"a": 3, "b": 3, "c": 3}}
+  f = {4: 2, 5: 2, 6: 2, 7: 2, 8: 2, 9: 2, 10: 4, 11: 3, 12: 4, 13: 4, 14: 4, 15: 4, 16: 4, 17: 4, 18: 4, 19: 4, 20: 4, 21: 4, 22: 6, 23: 4, 24: 4, 25: 5, 26: 8, 27: 4, 28: 8, 29: 6, 30: 8}  surprise mean=1.99 bits max=8.71 bits
+problem 562a75083a05 (variant): addfree {"group": "cyclic", "equation": {"a": 1, "b": 2, "c": 2}, "equation2": {"a": 3, "b": 3, "c": 3}}
