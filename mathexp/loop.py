@@ -14,6 +14,20 @@ Order inside one problem (PROTOCOL.md "One iteration", with run 2's bits):
    (fewer than ``MIN_CHECKABLE`` values) and queue the rest.
 
 ``--predict-only`` (arm A5) stops after step 2.
+
+Run 3 adds two modes (PROTOCOL.md "Run 3"):
+
+- ``--breadth full`` (arm A4b) replaces steps 3-4: fix the prior P (at most 2 bridges),
+  store a ``method_band`` forecast from a separate call that sees the true values (the
+  probe is refused until it is on disk), then a probe and a re-probe (k = 1, menu
+  restricted to P) and a wide weave (k = 3, menu excluding every bridge group that
+  contains a P bridge; a bound labelled with an excluded bridge is recorded but not
+  counted), then m = 3 mutations under ``--policy random``.
+- ``--notes-scope cluster`` (arm A5b, predict-only, problems from ``--clusters``): the
+  notes are the earlier problems of the same cluster; with ``--explain on`` each note
+  also carries an explanation written by a separate call that sees the statement, the
+  true values and the extremal witness at n_max. The explain call is skipped for each
+  cluster's last child, whose note is never shown.
 """
 
 from __future__ import annotations
@@ -28,7 +42,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
-from . import calibration, prompts
+from . import calibration, method, prompts
 from .checking import check_bound
 from .llm import Backend, LLMError
 from .problems import get_family, validate_mutation
@@ -101,13 +115,51 @@ def prior_bridges(store: Store, family: str, parent: str | None, model: str | No
         ids = list(dict.fromkeys(w["bridge_id"] for w in weaves if w.get("problem") == parent and w.get("win")))
         if ids:
             return ids, "parent"
+    return prior_bridges_from(weaves, family, model)
+
+
+def prior_full(store: Store, family: str, parent: str | None, model: str | None) -> tuple[list[str], str]:
+    """Run 3's prior P (PROTOCOL.md "A4b", step 2), at most ``method.P_CAP`` bridges:
+    the parent's winning bridges ranked by their best (lowest) g(n_max); failing that,
+    the family's ranking by run 2's rule; failing that, empty.
+
+    Only counted bounds whose bridge label is a menu id count, so a model's free-form
+    or excluded label never enters P (run 2's ``in_prior`` trusted the label)."""
+    menu = {b["id"] for b in prompts.bridges()}
+    weaves = [w for w in store.rows("weaves") if w.get("counted", True) and w.get("bridge_id") in menu
+              and (model is None or w.get("by") == model)]
+    if parent:
+        best: dict[str, float] = {}
+        for w in weaves:
+            if w.get("problem") == parent and w.get("win"):
+                g = method.g_at_nmax(w)
+                if g is not None:
+                    best[w["bridge_id"]] = min(best.get(w["bridge_id"], math.inf), g)
+        if best:
+            return sorted(best, key=lambda b: (best[b], b))[:method.P_CAP], "parent"
+    ranked, source = prior_bridges_from(weaves, family, model)
+    return ranked[:method.P_CAP], source
+
+
+def prior_bridges_from(weaves: list[dict], family: str, model: str | None) -> tuple[list[str], str]:
+    """Run 2's family ranking over the given weaves: (top 2, "family") or ([], "none")."""
     imp = bridge_importance(weaves, model)
     fam = {w["bridge_id"] for w in weaves if w.get("win") and w.get("family") == family
            and (model is None or w.get("by") == model)}
     ranked = sorted(fam, key=lambda b: (-len(imp[b]["families"]), -len(imp[b]["problems"]), b))
-    if ranked:
-        return ranked[:2], "family"
-    return [], "none"
+    return (ranked[:2], "family") if ranked else ([], "none")
+
+
+def overlap(child: dict[int, int], shown: list[dict[int, int]]) -> float | None:
+    """PROTOCOL.md "A5b": the maximum, over the problems shown in a child's notes, of
+    the share of common n where the two f values are equal (only common n count)."""
+    best = None
+    for other in shown:
+        common = [n for n in child if n in other]
+        if common:
+            share = sum(1 for n in common if child[n] == other[n]) / len(common)
+            best = share if best is None else max(best, share)
+    return best
 
 
 @dataclass
@@ -127,6 +179,11 @@ class Config:
     seeds_top: int | None = None
     predict_only: bool = False
     notes: bool = False
+    notes_scope: str = "family"          # run 3: "cluster" (A5b)
+    explain: bool = False                # run 3: N2's explanation notes
+    clusters: str | None = None          # run 3: clusters.json (A5b problems, in its order)
+    clusters_top: int | None = None      # run 3: only the first N clusters in order
+    exclude: frozenset = frozenset()     # run 3: problem ids no arm may use (run 2's 40)
     run_id: str = "auto"
     seed: int = 0
     time_limit: float = DEFAULT_TIME_LIMIT
@@ -157,8 +214,11 @@ class Loop:
         self.truths: dict[str, dict[int, int | None]] = {}
         self.surprises: dict[str, float | None] = {}
         self.pending_effects: dict[str, list[dict]] = {}
-        self.notes: dict[str, list[dict]] = {}  # family -> processed problems, oldest first
+        self.notes: dict[str, list[dict]] = {}  # family or cluster -> processed problems, oldest first
         self.position = 0
+        self.cluster_truths: dict[str, list[dict]] = {}  # cluster -> processed members' truths
+        self.cur_problem: str | None = None
+        self.cur_calls: dict[str, int] = {}
         self.sys_version, self.system = prompts.system_prompt()
         self.log = cfg.log
 
@@ -173,14 +233,18 @@ class Loop:
             if self.budget_left() <= 0:
                 return None, None, version
             self.calls += 1
+            self.cur_calls[step] = self.cur_calls.get(step, 0) + 1
             call_id = new_id("call")
             row = {"id": call_id, "when": now(), "run": self.run, "step": step, "attempt": attempt,
-                   "backend": self.backend.name, "prompt_version": version,
+                   "problem": self.cur_problem, "backend": self.backend.name,
+                   "requested_model": getattr(self.backend, "model", None), "model": None,
+                   "prompt_version": version,
                    "system_version": self.sys_version, "system": self.system, "prompt": prompt,
                    "raw": None, "parse_ok": False, "parse_error": None, "meta": {}}
             try:
                 raw, meta = self.backend.complete(self.system, prompt, prompts.SCHEMAS[schema], context)
                 row["raw"], row["meta"] = raw, meta
+                row["model"] = meta.get("model")
                 if meta.get("model"):
                     self.model_id = meta["model"]
                 parsed = parse(raw)
@@ -217,13 +281,49 @@ class Loop:
             pid = fam.problem_id(spec)
             if pid != r["id"]:
                 raise ValueError(f"scan problem {r['id']} hashes to {pid}; selection file is stale")
+            if pid in self.cfg.exclude:
+                raise ValueError(f"scan problem {pid} is an excluded (run 2) spec")
             items.append({"family": fam.name, "spec": spec, "id": pid, "parent": None, "what_if": None,
                           "provenance": "scan", "seed_name": None, "known_as": [],
                           "scan_rank": r["rank"], "scan_score": r["score"], "scan_S": r.get("S"), "scan_J": r["J"],
                           "scan_L": r["L"]})
         return items
 
+    def cluster_items(self) -> list[dict]:
+        """A5b problems from a clusters file, in its seeded order: clusters by ``order``,
+        and within a cluster the parent, then the children."""
+        data = json.loads(Path(self.cfg.clusters).read_text(encoding="utf-8"))
+        clusters = sorted(data["clusters"], key=lambda c: c["order"])
+        if self.cfg.clusters_top is not None:
+            clusters = clusters[: self.cfg.clusters_top]
+        items = []
+        for c in clusters:
+            for m in sorted(c["members"], key=lambda m: m["cluster_pos"]):
+                fam = get_family(m["family"])
+                spec = {k: v for k, v in m["spec"].items() if v is not None}
+                errs = fam.validate(spec)
+                if errs or fam.problem_id(spec) != m["id"]:
+                    raise ValueError(f"cluster member {m['id']} invalid or stale: {errs}")
+                if m["id"] in self.cfg.exclude:
+                    raise ValueError(f"cluster member {m['id']} is an excluded (run 2) spec")
+                parent = c["members"][0]["id"] if m["role"] == "child" else None
+                items.append({"family": fam.name, "spec": spec, "id": m["id"], "parent": parent,
+                              "what_if": None if parent is None else f"changed {m.get('changed')}",
+                              "provenance": "scan" if m["role"] == "parent" else "variant",
+                              "seed_name": None, "known_as": [], "cluster": c["cluster"],
+                              "cluster_order": c["order"], "cluster_pos": m["cluster_pos"],
+                              "cluster_size": len(c["members"]), "cluster_role": m["role"],
+                              **({"scan_rank": m["scan_rank"], "scan_score": m["scan_score"], "scan_S": m["scan_S"],
+                                  "scan_J": m["scan_J"], "scan_L": m["scan_L"]} if m["role"] == "parent" else {})})
+        return items
+
     def seed_frontier(self) -> None:
+        if self.cfg.clusters:
+            for item in self.cluster_items():
+                self.seen.add(item["id"])
+                self.store.append("problems", {"event": "queued", "when": now(), "run": self.run, **item})
+                self.push(item, math.inf)
+            return
         if self.cfg.seeds_from:
             for item in self.scan_items():
                 if item["id"] in self.seen:
@@ -256,16 +356,24 @@ class Loop:
                 raise KeyError(f"unknown seeds {sorted(missing)}")
 
     def run_loop(self) -> dict:
+        """Process problems until the frontier, ``max_problems`` or the call budget runs
+        out. In full breadth (A4b) ``max_problems`` counts completed problems (probe,
+        re-probe and wide weave all stored), as the protocol sizes the arm."""
         self.seed_frontier()
-        done = 0
-        while self.frontier and (self.cfg.max_problems is None or done < self.cfg.max_problems) and self.budget_left() > 0:
+        done = completed = 0
+        while self.frontier and self.budget_left() > 0:
+            count = completed if self.cfg.breadth == "full" and not self.cfg.predict_only else done
+            if self.cfg.max_problems is not None and count >= self.cfg.max_problems:
+                break
             item = heapq.heappop(self.frontier).data
             self.log(f"problem {item['id']} ({item.get('seed_name') or item['provenance']}): "
                      f"{item['family']} {json.dumps({k: v for k, v in item['spec'].items() if k != 'ns'})}")
-            self.process(item)
+            rec = self.process(item)
             done += 1
-        self.log(f"run {self.run}: {done} problems, {self.calls} calls, store {self.store.dir}")
-        return {"run": self.run, "problems": done, "calls": self.calls}
+            completed += bool(rec.get("completed"))
+        self.cache.flush()
+        self.log(f"run {self.run}: {done} problems ({completed} completed), {self.calls} calls, store {self.store.dir}")
+        return {"run": self.run, "problems": done, "completed": completed, "calls": self.calls}
 
     # ---- one problem ------------------------------------------------------------
     def feedback(self, fam: Family) -> str:
@@ -274,12 +382,17 @@ class Loop:
         text = calibration.feedback_text(self.store.joined_predictions(), fam.name, self.model_id)
         return "\nYour running calibration on this problem family so far:\n" + text + "\n"
 
-    def notes_text(self, fam: Family) -> tuple[str, int]:
+    def notes_key(self, fam: Family, item: dict) -> str:
+        return item["cluster"] if self.cfg.notes_scope == "cluster" else fam.name
+
+    def notes_text(self, fam: Family, item: dict) -> tuple[str, int]:
         """Arm A5: statements and true sequences of the problems already processed in
-        this run in the same family, most recent first, at most NOTES_CAP."""
+        this run in the same family, most recent first, at most NOTES_CAP. Run 3 (A5b):
+        the same, scoped to the problem's cluster, and with each note's explanation
+        when ``explain`` is on."""
         if not self.cfg.notes:
             return "", 0
-        prev = list(reversed(self.notes.get(fam.name, [])))[:NOTES_CAP]
+        prev = list(reversed(self.notes.get(self.notes_key(fam, item), [])))[:NOTES_CAP]
         if not prev:
             return "\nNotes: no problems of this kind have been computed yet in this session.\n", 0
         lines = ["", "Notes: problems of the same kind computed earlier in this session, most recent "
@@ -287,14 +400,26 @@ class Loop:
         for i, nt in enumerate(prev, 1):
             vals = ", ".join(f"f({n}) = {f}" for n, f in nt["truth"].items())
             lines.append(f"{i}. {nt['statement']}\n   {vals}")
+            if self.cfg.explain and nt.get("explanation"):
+                lines.append(f"   Explanation: {nt['explanation']}")
         return "\n".join(lines) + "\n", len(prev)
 
-    def process(self, item: dict) -> None:
+    def condition(self) -> str | None:
+        """A5b's condition label for a predict-only run: N0 no notes, N1 cluster notes,
+        N2 cluster notes with explanations (None outside cluster scope)."""
+        if not self.cfg.predict_only or (self.cfg.notes and self.cfg.notes_scope != "cluster"):
+            return None
+        if not self.cfg.notes:
+            return "N0" if self.cfg.clusters else None
+        return "N2" if self.cfg.explain else "N1"
+
+    def process(self, item: dict) -> dict:
         fam = get_family(item["family"])
         spec, pid = item["spec"], item["id"]
         ns = list(spec["ns"])
         statement = fam.render(spec)
         self.position += 1
+        self.cur_problem, self.cur_calls = pid, {}
         rec = {"event": "done", "when": None, "run": self.run, "id": pid, "family": fam.name,
                "parent": item["parent"], "what_if": item["what_if"], "provenance": item["provenance"],
                "seed_name": item.get("seed_name"), "spec": spec, "statement": statement,
@@ -304,22 +429,35 @@ class Loop:
                **{k: item[k] for k in ("scan_rank", "scan_score", "scan_S", "scan_J", "scan_L") if k in item},
                "truth": {}, "timings": {}, "surprise_unit": "bits", "bits": {}, "surprise": None,
                "surprise_max": None, "surprising": None, "prior_bridges": [], "prior_source": None,
-               "mode": None, "escalated": False, "calls_used": 0, "stopped": None}
+               "mode": None, "escalated": False, "calls_used": 0, "calls_by_step": {}, "stopped": None}
+        if self.cfg.notes_scope == "cluster" or item.get("cluster"):
+            rec.update({"notes_scope": self.cfg.notes_scope, "explain": self.cfg.explain,
+                        "condition": self.condition(), "overlap": None, "explanation": None,
+                        **{k: item.get(k) for k in ("cluster", "cluster_order", "cluster_pos", "cluster_size",
+                                                    "cluster_role")}})
+        if self.cfg.breadth == "full" and not self.cfg.predict_only:
+            rec.update({"stratum": "seed" if item["parent"] is None else "mutant", "completed": False})
         calls0 = self.calls
         try:
             self._process(item, fam, spec, pid, ns, statement, rec)
         finally:
             rec["when"] = now()
             rec["calls_used"] = self.calls - calls0
+            rec["calls_by_step"] = dict(self.cur_calls)
             self.store.append("problems", rec)
+            self.cur_problem = None
             known = {n: f for n, f in self.truths.get(pid, {}).items() if f is not None}
             if known:
-                self.notes.setdefault(fam.name, []).append({"statement": statement, "truth": known})
+                self.notes.setdefault(self.notes_key(fam, item), []).append(
+                    {"statement": statement, "truth": known, "explanation": rec.get("explanation")})
+                if item.get("cluster"):
+                    self.cluster_truths.setdefault(item["cluster"], []).append(known)
+        return rec
 
     def _process(self, item, fam, spec, pid, ns, statement, rec) -> None:
         # 1. predict
         ctx = {"step": "predict", "family": fam, "spec": spec, "ns": ns, "seed_name": item.get("seed_name")}
-        notes, rec["notes_shown"] = self.notes_text(fam)
+        notes, rec["notes_shown"] = self.notes_text(fam, item)
         parsed, call_id, ver = self.ask(
             "predict", "predict",
             {"problem": statement, "ns": ", ".join(map(str, ns)), "feedback": self.feedback(fam),
@@ -395,7 +533,18 @@ class Loop:
         known = {n: f for n, f in truth.items() if f is not None}
         self.log(f"  f = {known}  surprise mean={mean if mean is None else round(mean, 2)} bits "
                  f"max={mx if mx is None else round(mx, 2)} bits")
+        if item.get("cluster"):
+            # the earlier members of the cluster: what N1/N2 show, so the same in every condition
+            shown = self.cluster_truths.get(item["cluster"], [])
+            rec["overlap"] = overlap(known, shown) if item.get("cluster_role") == "child" else None
         if self.cfg.predict_only:
+            if self.cfg.explain and known and not (item.get("cluster_pos") == item.get("cluster_size")
+                                                   and item.get("cluster_role") == "child"):
+                self.explain(fam, spec, pid, statement, known, rec)
+            return
+
+        if self.cfg.breadth == "full":
+            self.full_breadth(item, fam, spec, pid, ns, statement, truth, rec)
             return
 
         # 3. breadth (arm A4)
@@ -410,7 +559,8 @@ class Loop:
         rec["mode"] = mode
 
         # 4. weave
-        wins = self.weave(item, fam, spec, pid, ns, statement, truth, mode, k, prior, weave_call=1)
+        rows = self.weave(item, fam, spec, pid, ns, statement, truth, mode, k, prior, weave_call=1)
+        wins = sum(1 for w in rows or [] if w["win"])
         if mode == "narrow" and wins == 0:
             if self.budget_left() > 0:
                 rec["escalated"] = True
@@ -455,6 +605,10 @@ class Loop:
                                at_n=n, child_f=c, parent_f=p)
 
     def _breadth_text(self, mode: str, k: int, prior: list[str]) -> str:
+        if mode == "probe":
+            return "Give exactly 1 bound, using one of the bridges in the menu below."
+        if mode == "wide3":
+            return f"Give up to {k} bounds, using different bridges from the menu below where you can."
         if mode == "fixed":
             return f"Give up to {k} bounds, using different bridges where you can."
         if mode == "narrow":
@@ -468,9 +622,16 @@ class Loop:
                     "NOT in the prior.")
         return f"Give up to {k} bounds, using at least {WIDE_MIN_OUTSIDE} different bridges."
 
-    def weave(self, item, fam, spec, pid, ns, statement, truth, mode, k, prior, weave_call) -> int:
+    def weave(self, item, fam, spec, pid, ns, statement, truth, mode, k, prior, weave_call,
+              restrict: list[str] | None = None, excluded: set[str] | None = None,
+              step: str = "weave") -> list[dict] | None:
+        """One weave call; returns the stored weave rows, or None if the call failed
+        (budget or two parse failures). ``restrict`` limits the bridge menu (run 2's
+        narrow mode restricts it to the prior); a bound whose bridge label is in
+        ``excluded`` is stored with ``counted: false`` (run 3's wide weave)."""
         params = fam.params(spec)
-        restrict = prior if (mode == "narrow" and prior) else None
+        if restrict is None and mode == "narrow" and prior:
+            restrict = prior
         vars = {"problem": statement, "ns": ", ".join(map(str, ns)), "k": k,
                 "params": (" (you may also use the names " + ", ".join(f"{p} = {v}" for p, v in params.items())
                            + ")") if params else "",
@@ -480,14 +641,14 @@ class Loop:
             vars["bridges"] = prompts.bridge_menu(restrict)
             vars["lemmas"] = prompts.lemma_menu()
         ctx = {"step": "weave", "family": fam, "spec": spec, "ns": ns, "truth": truth, "k": k,
-               "mode": mode, "prior": prior}
-        bounds, call_id, ver = self.ask("weave", template, vars, "weave", ctx,
+               "mode": mode, "prior": prior, "allowed": restrict, "weave_call": weave_call}
+        bounds, call_id, ver = self.ask(step, template, vars, "weave", ctx,
                                         lambda t: prompts.parse_weave(t, k))
-        if not bounds:
-            return 0
+        if bounds is None:
+            return None
         bridge_ids = {b["id"] for b in prompts.bridges()}
         lemma_ids = {lm["id"] for lm in prompts.lemmas()}
-        wins = 0
+        rows = []
         for b in bounds:
             pred = self.store.predict(
                 run=self.run, by=self.model_id, domain=fam.name, kind="bound_holds", level="mechanism",
@@ -498,19 +659,143 @@ class Loop:
             status = res["status"]
             self.store.outcome(pred["id"], {"consistent": "right", "violated": "wrong"}.get(status, "couldnt-tell"),
                                status)
-            wins += bool(res["win"])
-            self.store.append("weaves", {
+            counted = not (excluded and b["bridge_id"] in excluded)
+            row = {
                 "id": new_id("weave"), "when": now(), "run": self.run, "by": self.model_id,
                 "problem": pid, "family": fam.name, "provenance": item["provenance"],
                 "menu": self.cfg.menu, "breadth": self.cfg.breadth, "mode": mode, "weave_call": weave_call,
-                "prior_bridges": prior, "in_prior": b["bridge_id"] in prior,
+                "step": step, "prior_bridges": prior, "in_prior": b["bridge_id"] in prior,
                 "menu_ids_ok": (b["bridge_id"] in bridge_ids and all(x in lemma_ids for x in b["lemma_ids"]))
                 if self.cfg.menu else None,
-                **b, **res, "prediction": pred["id"], "call": call_id, "prompt_version": ver})
+                **({"counted": counted, "in_menu_shown": restrict is None or b["bridge_id"] in restrict}
+                   if self.cfg.breadth == "full" else {}),
+                **b, **res, "prediction": pred["id"], "call": call_id, "prompt_version": ver}
+            self.store.append("weaves", row)
+            rows.append(row)
             self.log(f"  weave[{weave_call}/{mode}] {b['bridge_id']}+{'+'.join(b['lemma_ids'])}: "
                      f"g = {b['bound_expr']!r} -> {status}{' WIN' if res['win'] else ''}"
-                     f" tight_at={res['tight_at']}")
-        return wins
+                     f" tight_at={res['tight_at']}{'' if counted else ' (excluded label: not counted)'}")
+        return rows
+
+    # ---- run 3 ----------------------------------------------------------------
+    def explain(self, fam: Family, spec: dict, pid: str, statement: str, known: dict, rec: dict) -> None:
+        """A5b's N2 note: a separate call that sees the statement, the true values and the
+        extremal witness at n_max, and writes at most 80 words on the structure."""
+        n_max = max(known)
+        _, witness = self.cache.get_witness(fam, spec, n_max, self.cfg.time_limit)
+        wtext = fam.witness_text(spec, n_max, witness) if witness is not None else "(none available)"
+        ctx = {"step": "explain", "family": fam, "spec": spec}
+        parsed, call_id, ver = self.ask(
+            "explain", "explain",
+            {"problem": statement, "truth": ", ".join(f"f({n}) = {f}" for n, f in known.items()),
+             "witness": wtext}, "explain", ctx, prompts.parse_explain)
+        rec["explain_call"] = call_id
+        if parsed is not None:
+            rec["explanation"] = parsed["explanation"]
+            rec["explanation_words"] = parsed["words"]
+            rec["explanation_truncated"] = parsed["truncated"]
+
+    def method_forecast(self, item, fam, spec, pid, statement, known, prior, rec) -> dict | None:
+        """Step 3 of A4b: the method_band forecast, written to the store before any probe.
+        With an empty P the call shows the full menu and its chosen bridge becomes P."""
+        n_max = max(known)
+        choose = not prior
+        menu_ids = [b["id"] for b in prompts.bridges()]
+        shown = menu_ids if choose else prior
+        ctx = {"step": "method", "family": fam, "spec": spec, "choose": choose, "menu": shown}
+        parsed, call_id, ver = self.ask(
+            "method", "method",
+            {"problem": statement, "truth": ", ".join(f"f({n}) = {f}" for n, f in known.items()),
+             "bridges": prompts.bridge_menu(shown), "n_max": n_max, "f_max": known[n_max],
+             "choose": ("\nFirst choose the bridge from the menu below that you would give the solver: put its id "
+                        "in \"bridge_id\". The solver will be restricted to that bridge.\n") if choose else "",
+             "bridge_shape": "<bridge id>" if choose else "null"},
+            "method", ctx, lambda t: prompts.parse_method(t, menu_ids if choose else None))
+        if parsed is None:
+            return None
+        dist = parsed["bands"]
+        top = max(method.BANDS, key=lambda b: (dist[b], -method.BANDS.index(b)))
+        common = dict(run=self.run, by=self.model_id, domain=fam.name, level="mechanism", problem=pid,
+                      call=call_id, prompt_version=ver, provenance=item["provenance"], n_max=n_max)
+        row = self.store.predict(kind="method_band", claim="the first probe's best bound falls in band "
+                                 + ", ".join(f"{b} {dist[b]:.2f}" for b in method.BANDS),
+                                 confidence=1.0, bands=dist, chosen_bridge=parsed["bridge_id"],
+                                 normalized=parsed["normalized"], **common)
+        top_row = self.store.predict(kind="method_band_top", claim=f"the first probe's best bound is {top}",
+                                     confidence=dist[top], top=top, **common)
+        return {"bands": dist, "top": top, "bridge_id": parsed["bridge_id"], "pred": row["id"],
+                "top_pred": top_row["id"], "call": call_id}
+
+    def full_breadth(self, item, fam, spec, pid, ns, statement, truth, rec) -> None:
+        """A4b, steps 2-6 (PROTOCOL.md "Run 3"). Everything the replay needs is stored on
+        the problem row under ``full``; the signals are fixed before the wide weave."""
+        known = {n: f for n, f in truth.items() if f is not None}
+        rec["mode"] = "full"
+        full = rec["full"] = {"P": [], "P_source": None, "p_from_method": False, "method": None,
+                              "probe": None, "reprobe": None, "wide": None, "Y": None}
+        if not known:
+            rec["stopped"] = "no computed values"
+            return
+        n_max, f_max = max(known), known[max(known)]
+        # 2. prior P (at most 2 bridges)
+        prior, source = prior_full(self.store, fam.name, item["parent"], self.model_id)
+        # 3. method prediction (a separate call that sees the true values)
+        fc = self.method_forecast(item, fam, spec, pid, statement, known, prior, rec)
+        if fc is None:
+            rec["stopped"] = "no method prediction (budget or parse failure); probe not run"
+            return
+        if not prior:
+            prior, source = [fc["bridge_id"]], "method"
+            full["p_from_method"] = True
+        full["P"], full["P_source"] = prior, source
+        rec["prior_bridges"], rec["prior_source"] = prior, source
+        full["method"] = {"bands": fc["bands"], "top": fc["top"], "median": method.median_band(fc["bands"])}
+        # refusal: no probe until the method row is on disk
+        self.store.require_method_prediction(pid, self.run)
+        # 4. probe and re-probe: k = 1, menu restricted to P
+        p1 = self.weave(item, fam, spec, pid, ns, statement, truth, "probe", method.PROBE_K, prior, 1,
+                        restrict=prior, step="probe")
+        if p1 is None:
+            rec["stopped"] = "probe failed (budget or parse failure)"
+            self.store.outcome(fc["pred"], "couldnt-tell", None)
+            self.store.outcome(fc["top_pred"], "couldnt-tell", None)
+            return
+        pr1 = method.best_probe(p1, f_max)
+        band = pr1["band"]
+        m_bits, p_obs = method.band_bits(fc["bands"], band)
+        # the method rows are scored on the first probe alone
+        self.store.outcome(fc["pred"], "right", band, bits=m_bits, p_true=p_obs)
+        self.store.outcome(fc["top_pred"], "right" if band == fc["top"] else "wrong", band)
+        full["method"].update({"observed": band, "M": m_bits, "p_observed": p_obs,
+                               "direction": method.direction(fc["bands"], band),
+                               "M_trigger": m_bits >= method.METHOD_SURPRISE_BITS})
+        full["probe"] = {**pr1, "stored": True, "n_max": n_max, "f_max": f_max}
+        p2 =self.weave(item, fam, spec, pid, ns, statement, truth, "probe", method.PROBE_K, prior, 2,
+                        restrict=prior, step="reprobe")
+        full["reprobe"] = {**method.best_probe(p2 or [], f_max), "stored": p2 is not None}
+        if p2 is None:
+            rec["stopped"] = "re-probe failed"
+            return
+        # 5. wide: k = 3, menu outside every group that contains a P bridge
+        excluded = method.excluded_bridges(prior)
+        allowed = [b["id"] for b in prompts.bridges() if b["id"] not in excluded]
+        full["wide_menu"] = allowed
+        w = self.weave(item, fam, spec, pid, ns, statement, truth, "wide3", method.WIDE3_K, prior, 3,
+                       restrict=allowed, excluded=excluded, step="wide")
+        if w is None:
+            rec["stopped"] = "wide weave failed"
+            return
+        counted = [x for x in w if x["counted"]]
+        gs = [g for g in (method.g_at_nmax(x) for x in counted) if g is not None]
+        probe_gs = [g for g in (full["probe"]["best_g"], full["reprobe"]["best_g"]) if g is not None]
+        best_wide = min(gs) if gs else None
+        full["wide"] = {"best_g": best_wide, "n_bounds": len(w), "n_counted": len(counted),
+                        "n_excluded_label": len(w) - len(counted),
+                        "counted_wins": sum(1 for x in counted if x["win"])}
+        full["Y"] = best_wide is not None and (not probe_gs or best_wide < min(probe_gs))
+        rec["completed"] = True
+        # 6. mutate (m = 3; the run uses --policy random)
+        self.mutate(item, fam, spec, pid, truth, method.FULL_M)
 
     def mutate(self, item, fam, spec, pid, truth, m) -> None:
         if self.budget_left() <= 0:
@@ -538,6 +823,10 @@ class Loop:
                 self.log(f"  mutation rejected: {errs}")
                 continue
             cid = fam.problem_id(child)
+            if cid in self.cfg.exclude:
+                self.store.append("problems", {"event": "excluded", "id": cid, "reason": "run 2 spec", **base})
+                self.log(f"  mutation excluded: {cid} is one of run 2's specs")
+                continue
             if cid in self.seen:
                 self.store.append("problems", {"event": "duplicate", "id": cid, **base})
                 continue

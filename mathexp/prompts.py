@@ -10,7 +10,9 @@ from functools import lru_cache
 from . import PKG
 
 PROMPTS = PKG / "prompts"
-STEPS = ("predict", "weave_menu", "weave_free", "mutate")
+STEPS = ("predict", "weave_menu", "weave_free", "mutate", "method", "explain")
+#: Run 3, A5b: the explanation note is at most this many words (longer text is cut).
+EXPLAIN_MAX_WORDS = 80
 
 
 @lru_cache
@@ -115,6 +117,21 @@ SCHEMAS = {
                            "p_effect": NUM01},
             "required": ["spec", "what_if", "predicted_effect", "p_effect"]}}},
         "required": ["mutations"]},
+    "method": {
+        "type": "object",
+        "properties": {"bridge_id": {"type": ["string", "null"]},
+                       "bands": {"type": "object",
+                                 "properties": {b: NUM01 for b in ("tight", "close", "moderate", "loose", "failed")},
+                                 "required": ["tight", "close", "moderate", "loose", "failed"]}},
+        "required": ["bridge_id", "bands"]},
+    "explain": {
+        "type": "object",
+        "properties": {"explanation": {"type": "string"}},
+        "required": ["explanation"]},
+    "ping": {
+        "type": "object",
+        "properties": {"ok": {"type": "boolean"}},
+        "required": ["ok"]},
 }
 
 
@@ -234,6 +251,53 @@ def parse_mutate(text: str, m: int) -> list[dict]:
         out.append({"spec": it["spec"], "what_if": str(it.get("what_if", "")),
                     "predicted_effect": eff, "p_effect": _prob(it.get("p_effect"))})
     return out
+
+
+def parse_method(text: str, choose_from: list[str] | None = None) -> dict:
+    """Run 3 method forecast: a probability for each of the five bands (missing bands
+    are an error; masses are divided by their sum). With ``choose_from`` (P was empty),
+    ``bridge_id`` must name one of those bridges; otherwise it is ignored."""
+    from .method import BANDS
+
+    obj = extract_json(text)
+    if not isinstance(obj, dict) or not isinstance(obj.get("bands"), dict):
+        raise ParseError("method: missing bands object")
+    raw = obj["bands"]
+    missing = [b for b in BANDS if b not in raw]
+    if missing:
+        raise ParseError(f"method: missing bands {missing}")
+    dist = {b: _prob(raw[b]) for b in BANDS}
+    total = sum(dist.values())
+    if total <= 0:
+        raise ParseError("method: zero total probability")
+    normalized = abs(total - 1) > 1e-6
+    dist = {b: p / total for b, p in dist.items()}
+    bridge = obj.get("bridge_id")
+    if choose_from is not None:
+        if not isinstance(bridge, str) or bridge.strip() not in choose_from:
+            raise ParseError(f"method: bridge_id {bridge!r} is not one of the menu's bridges")
+        bridge = bridge.strip()
+    else:
+        bridge = None
+    return {"bands": dist, "bridge_id": bridge, "normalized": normalized, "raw_total": total}
+
+
+def parse_explain(text: str) -> dict:
+    """Run 3 explanation note: a non-empty string, cut to EXPLAIN_MAX_WORDS words."""
+    obj = extract_json(text)
+    exp = obj.get("explanation") if isinstance(obj, dict) else None
+    if not isinstance(exp, str) or not exp.strip():
+        raise ParseError("explain: missing explanation")
+    words = exp.split()
+    return {"explanation": " ".join(words[:EXPLAIN_MAX_WORDS]), "words": len(words),
+            "truncated": len(words) > EXPLAIN_MAX_WORDS}
+
+
+def parse_ping(text: str) -> dict:
+    obj = extract_json(text)
+    if not isinstance(obj, dict) or obj.get("ok") is not True:
+        raise ParseError(f"ping: expected {{\"ok\": true}}, got {text[:200]!r}")
+    return obj
 
 
 def recognition_matches(recognized: str | None, known_as: list[str]) -> bool:

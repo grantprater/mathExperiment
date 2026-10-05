@@ -233,6 +233,10 @@ class MockBackend(Backend):
         if ctx.get("mode") == "narrow":
             self.narrow_calls += 1
             return {"bounds": [loose if self.narrow_calls % 2 == 1 else tight]}
+        if ctx.get("mode") == "probe":
+            return {"bounds": [self._probe_bound(ctx, top, prior)]}
+        if ctx.get("mode") == "wide3":
+            return {"bounds": self._wide3_bounds(ctx, top, prior)}
         bounds = [
             {**tight, "bridge_id": "orbit_averaging"},
             loose,
@@ -249,6 +253,59 @@ class MockBackend(Backend):
         self.weave_calls += 1
         bounds = bounds[r:] + bounds[:r]
         return {"bounds": bounds[: max(1, ctx.get("k", 4))]}
+
+    # ---- run 3 ----------------------------------------------------------------
+    #: First-probe bounds, rotated per call: (label, g as a function of the largest
+    #: computed value). Constants >= max f are consistent; "-1" is violated. Bands:
+    #: loose, close (or moderate when f is small), moderate, tight, loose, failed.
+    PROBE1 = (("loose", lambda t: 3 * t + 2), ("close", lambda t: t + 1), ("moderate", lambda t: 2 * t),
+              ("tight", lambda t: t), ("loose", lambda t: 4 * t + 3), ("failed", lambda t: -1))
+
+    def _probe_bound(self, ctx, top, prior):
+        bridge = (ctx.get("allowed") or prior or ["charvec_fp"])[0]
+        if ctx.get("weave_call") == 1:
+            self.probe1_calls = getattr(self, "probe1_calls", 0) + 1
+            _, g = self.PROBE1[(self.probe1_calls - 1) % len(self.PROBE1)]
+            expr = str(g(top))
+        else:  # the re-probe: a seeded draw around the first probe's range
+            expr = str(top + self.rng.choice([0, 1, 2, top, 2 * top + 1]))
+        return {"bridge_id": bridge, "lemma_ids": ["dim_independent"], "translation": "mock probe",
+                "bound_expr": expr, "proof_sketch": "mock", "p_holds": 0.8}
+
+    def _wide3_bounds(self, ctx, top, prior):
+        """Three bounds from the allowed menu at seeded levels; every third call labels
+        its first bound with a prior bridge, which the loop must record but not count."""
+        self.wide3_calls = getattr(self, "wide3_calls", 0) + 1
+        allowed = list(ctx.get("allowed") or ["double_counting"])
+        out = []
+        for i in range(min(3, ctx.get("k", 3))):
+            bridge = allowed[(self.wide3_calls + i) % len(allowed)]
+            if i == 0 and self.wide3_calls % 3 == 0 and prior:
+                bridge = prior[0]
+            g = top + self.rng.choice([0, 2, 2 * top + 2, 5 * top + 4, 4 * top, 3 * top + 1])
+            out.append({"bridge_id": bridge, "lemma_ids": ["pigeonhole", "cauchy_schwarz"][: 1 + i % 2],
+                        "translation": "mock wide bound", "bound_expr": str(g), "proof_sketch": "mock",
+                        "p_holds": 0.7})
+        return out
+
+    def _method(self, ctx):
+        from .method import BANDS
+
+        w = [self.rng.random() ** 2 + 0.01 for _ in BANDS]
+        s = sum(w)
+        out = {"bridge_id": ctx["menu"][0] if ctx.get("choose") else None,
+               "bands": {b: round(x / s, 4) for b, x in zip(BANDS, w)}}
+        return out
+
+    def _explain(self, ctx):
+        self.explain_calls = getattr(self, "explain_calls", 0) + 1
+        words = ["mock:", "the", "extremal", "objects", "are", "blocks", "of", "a", "design."]
+        if self.explain_calls % 4 == 0:  # an over-long note, to exercise the 80-word cut
+            words = words * 12
+        return {"explanation": " ".join(words)}
+
+    def _ping(self, ctx):
+        return {"ok": True}
 
     def _mutate(self, ctx):
         fam, spec, m = ctx["family"], ctx["spec"], ctx["m"]

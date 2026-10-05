@@ -107,6 +107,14 @@ class Store:
         raise Refusal(f"refusing to compute f({n}) for problem {problem}: "
                       f"no value prediction has been written for it")
 
+    def require_method_prediction(self, problem: str, run: str | None = None) -> dict:
+        """Run 3 refusal: the probe weave for a problem needs its method_band row on disk."""
+        for r in self.rows("predictions"):
+            if r.get("kind") == "method_band" and r.get("problem") == problem and (run is None or r.get("run") == run):
+                return r
+        raise Refusal(f"refusing to run the probe for problem {problem}: "
+                      f"no method_band prediction has been written for it")
+
     def joined_predictions(self) -> list[dict]:
         """Prediction rows with their latest outcome folded in, in file (time) order."""
         rows = self.rows("predictions")
