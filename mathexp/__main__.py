@@ -23,6 +23,12 @@ def _store_path(args) -> str:
 
 
 def cmd_run(args) -> int:
+    if args.top is not None and not args.seeds_from:
+        print("--top applies to --seeds-from only", file=sys.stderr)
+        return 2
+    if args.seeds_from and args.seeds != "all":
+        print("--seeds and --seeds-from are exclusive", file=sys.stderr)
+        return 2
     if args.breadth == "adaptive" and (args.bridges_per_problem is not None or args.mutations_per_problem is not None):
         print("--bridges-per-problem/--mutations-per-problem apply to --breadth fixed only", file=sys.stderr)
         return 2
@@ -33,7 +39,8 @@ def cmd_run(args) -> int:
                  k_fixed=args.bridges_per_problem or 3, m_fixed=args.mutations_per_problem or 3,
                  max_calls=args.max_calls, max_problems=args.max_problems,
                  seeds=None if args.seeds == "all" else [s.strip() for s in args.seeds.split(",") if s.strip()],
-                 run_id=args.run_id, seed=args.seed, time_limit=args.time_limit)
+                 seeds_from=args.seeds_from, seeds_top=args.top, predict_only=args.predict_only,
+                 notes=args.notes == "on", run_id=args.run_id, seed=args.seed, time_limit=args.time_limit)
     summary = Loop(cfg).run_loop()
     print(json.dumps(summary))
     return 0
@@ -66,6 +73,17 @@ def cmd_truth(args) -> int:
     return 0
 
 
+def cmd_scan(args) -> int:
+    from . import scan
+
+    families = [args.family] if args.family else list(scan.FAMILY_ORDER)
+    out = scan.run_scan(families, args.max_len, args.time_limit, args.top, args.quota,
+                        out_dir=args.out or scan.SCAN_DIR, golf_cap=args.golf_cap)
+    print(json.dumps({k: v for k, v in out.items() if k in families or k in ("selection", "last_wall_seconds")},
+                     indent=1))
+    return 0
+
+
 def cmd_show_prompt(args) -> int:
     s = prompts.seed(args.seed)
     fam = get_family(s["family"])
@@ -78,7 +96,7 @@ def cmd_show_prompt(args) -> int:
     _, system = prompts.system_prompt()
     step = args.step
     if step == "predict":
-        ver, text = prompts.render("predict", problem=statement, ns=ns, feedback="")
+        ver, text = prompts.render("predict", problem=statement, ns=ns, feedback="", notes="")
     elif step in ("weave_menu", "weave_free"):
         mode = args.mode
         k = NARROW_K if mode == "narrow" else WIDE_K if mode == "wide" else 3
@@ -117,6 +135,12 @@ def main(argv=None) -> int:
     r.add_argument("--max-calls", type=int, default=30)
     r.add_argument("--max-problems", type=int, default=None, help="default: no cap; --max-calls ends the run")
     r.add_argument("--seeds", default="all", help="'all' or comma-separated seed names")
+    r.add_argument("--seeds-from", default=None, help="a scan selection (scan/selected.jsonl): provenance 'scan'")
+    r.add_argument("--top", type=int, default=None, help="with --seeds-from: only the N best-ranked problems")
+    r.add_argument("--predict-only", action="store_true",
+                   help="arm A5: predict and compute only (no weave, no mutation); one call per problem")
+    r.add_argument("--notes", choices=["on", "off"], default="off",
+                   help="arm A5: show earlier problems of the same family and their true f in the predict prompt")
     r.add_argument("--store", default=None, help="default: store/ (mock: scratch/store-mock/)")
     r.add_argument("--run-id", default="auto")
     r.add_argument("--seed", type=int, default=0)
@@ -133,6 +157,20 @@ def main(argv=None) -> int:
     t.add_argument("--time-limit", type=float, default=DEFAULT_TIME_LIMIT)
     t.add_argument("--no-cache", action="store_true")
     t.set_defaults(func=cmd_truth)
+
+    from .golf import DEFAULT_CAP
+    from .scan import DEFAULT_QUOTA, DEFAULT_SCAN_TIME_LIMIT, DEFAULT_TOP
+
+    sc = sub.add_parser("scan", help="enumerate, brute-force and golf specs; select run 2's problems")
+    sc.add_argument("--family", choices=["setfam", "addfree"], default=None, help="default: both")
+    sc.add_argument("--max-len", type=int, default=None,
+                    help="statement-length cap (default per family: setfam 8, addfree 12)")
+    sc.add_argument("--top", type=int, default=DEFAULT_TOP)
+    sc.add_argument("--quota", type=int, default=DEFAULT_QUOTA, help="per-family cap in the selection")
+    sc.add_argument("--time-limit", type=float, default=DEFAULT_SCAN_TIME_LIMIT, help="seconds per (spec, n)")
+    sc.add_argument("--golf-cap", type=int, default=DEFAULT_CAP, help=argparse.SUPPRESS)
+    sc.add_argument("--out", default=None, help=argparse.SUPPRESS)
+    sc.set_defaults(func=cmd_scan)
 
     sp = sub.add_parser("show-prompt", help="render a prompt without calling a model")
     sp.add_argument("--step", required=True, choices=list(prompts.STEPS))

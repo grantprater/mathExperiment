@@ -1,7 +1,10 @@
-"""`python -m mathexp report`: calibration, surprises, weave statuses, reuse, A4, what-if tree."""
+"""`python -m mathexp report`: calibration, surprises, weave headline and statuses, reuse,
+A4, A5 (notes), the scan-vs-model side result, and the what-if tree."""
 
 from __future__ import annotations
 
+import math
+import statistics
 from collections import Counter, defaultdict
 
 from . import calibration
@@ -30,18 +33,28 @@ def report(store: Store, run: str | None = None) -> str:
 
     out += ["== Calibration (domain x kind x level x model) ==", calibration.render_table(preds), ""]
 
-    out.append("== Top surprises (mean |log2((pred+1)/(f+1))|) ==")
-    ranked = sorted((p for p in done if p.get("surprise") is not None), key=lambda p: -p["surprise"])
-    for p in ranked[:8]:
-        out.append(f"  {p['surprise']:.2f} (max {p['surprise_max']:.2f}) {p['id']} {p['provenance']:<7} "
-                   f"{p.get('seed_name') or ''} f={p.get('truth')}")
-    if not ranked:
-        out.append("  (none)")
-    out.append("")
+    for unit, label in (("bits", "mean bits, -log2 P(f) (run 2)"),
+                        ("log2", "mean |log2((pred+1)/(f+1))| (run 1)")):
+        ranked = sorted((p for p in done if p.get("surprise") is not None
+                         and p.get("surprise_unit", "log2") == unit), key=lambda p: -p["surprise"])
+        has_any = any(p.get("surprise") is not None for p in done)
+        if not ranked and (unit == "log2" or has_any):
+            continue
+        out.append(f"== Top surprises ({label}) ==")
+        for p in ranked[:8]:
+            out.append(f"  {p['surprise']:.2f} (max {p['surprise_max']:.2f}) {p['id']} {p['provenance']:<7} "
+                       f"{p.get('seed_name') or ''} f={p.get('truth')}")
+        if not ranked:
+            out.append("  (none)")
+        out.append("")
+
+    out += weave_headline(weaves), ""
 
     out.append("== Weave status counts ==")
-    for prov in ("named", "variant"):
+    for prov in PROVENANCES:
         ws = [w for w in weaves if w.get("provenance") == prov]
+        if not ws and prov == "scan":
+            continue
         c = Counter(w["status"] for w in ws)
         wins = sum(1 for w in ws if w.get("win"))
         tight = sum(1 for w in ws if w.get("tight_at"))
@@ -72,14 +85,158 @@ def report(store: Store, run: str | None = None) -> str:
     out.append("")
 
     out += a4_section(done, weaves, calls), ""
+    out += a5_section(done), ""
+    out += side_result(done), ""
 
     out.append("== What-if tree ==")
     out += what_if_tree(problems)
     return "\n".join(out)
 
 
+PROVENANCES = ("named", "variant", "scan")
+
+
+def weave_headline(weaves: list[dict]) -> str:
+    """Run 2's headline for weaves: bounds tight at the largest computed n, and the
+    median g(n_max)/trivial(n_max) over consistent bounds; wins after them."""
+    lines = ["== Weave headline: tight at n_max, median g/trivial (then wins) =="]
+    for prov in PROVENANCES:
+        ws = [w for w in weaves if w.get("provenance") == prov]
+        if not ws:
+            continue
+        cons = [w for w in ws if w.get("status") == "consistent"]
+        tight = [w for w in cons if w.get("n_max") is not None and w["n_max"] in (w.get("tight_at") or [])]
+        ratios = [w["ratio"] for w in cons if w.get("ratio") is not None]
+        med = f"{statistics.median(ratios):.3f}" if ratios else "--"
+        wins = sum(1 for w in ws if w.get("win"))
+        lines.append(f"  {prov:<8} bounds={len(ws):<4} consistent={len(cons):<4} tight_at_n_max={len(tight):<4} "
+                     f"median g/trivial={med:<6} wins={wins}")
+    if len(lines) == 1:
+        lines.append("  (no weaves)")
+    return "\n".join(lines)
+
+
+def sign_test(diffs: list[float]) -> float | None:
+    """Two-sided exact sign test on the non-zero differences."""
+    nz = [d for d in diffs if d != 0]
+    n = len(nz)
+    if n == 0:
+        return None
+    k = min(sum(1 for d in nz if d > 0), sum(1 for d in nz if d < 0))
+    p = sum(math.comb(n, i) for i in range(k + 1)) / 2 ** n
+    return min(1.0, 2 * p)
+
+
+def _ranks(xs: list[float]) -> list[float]:
+    order = sorted(range(len(xs)), key=lambda i: xs[i])
+    r = [0.0] * len(xs)
+    i = 0
+    while i < len(order):
+        j = i
+        while j + 1 < len(order) and xs[order[j + 1]] == xs[order[i]]:
+            j += 1
+        for k in range(i, j + 1):
+            r[order[k]] = (i + j) / 2 + 1
+        i = j + 1
+    return r
+
+
+def spearman(xs: list[float], ys: list[float]) -> float | None:
+    """Spearman's rho (Pearson on average ranks); None if undefined."""
+    if len(xs) < 3:
+        return None
+    rx, ry = _ranks(xs), _ranks(ys)
+    mx, my = sum(rx) / len(rx), sum(ry) / len(ry)
+    sxy = sum((a - mx) * (b - my) for a, b in zip(rx, ry))
+    sxx = sum((a - mx) ** 2 for a in rx)
+    syy = sum((b - my) ** 2 for b in ry)
+    if sxx == 0 or syy == 0:
+        return None
+    return sxy / math.sqrt(sxx * syy)
+
+
+def _a5_arms(done: list[dict]) -> dict[bool, list[dict]]:
+    arms: dict[bool, list[dict]] = {True: [], False: []}
+    for p in done:
+        if p.get("predict_only") and p.get("surprise_unit") == "bits" and p.get("surprise") is not None:
+            arms[bool(p.get("notes"))].append(p)
+    return arms
+
+
+def a5_section(done: list[dict]) -> str:
+    lines = ["== A5: notes and compression progress (predict-only; bits per problem) =="]
+    arms = _a5_arms(done)
+    if not arms[True] and not arms[False]:
+        lines.append("  (no predict-only problems)")
+        return "\n".join(lines)
+    per_arm: dict[bool, dict[str, float]] = {}
+    for flag in (False, True):
+        ps = arms[flag]
+        name = "notes on " if flag else "notes off"
+        if not ps:
+            lines.append(f"  {name}: (none)")
+            continue
+        by_id: dict[str, list[float]] = defaultdict(list)
+        for p in ps:
+            by_id[p["id"]].append(p["surprise"])
+        per_arm[flag] = {k: sum(v) / len(v) for k, v in by_id.items()}
+        mean = sum(p["surprise"] for p in ps) / len(ps)
+        lines.append(f"  {name}: mean bits per problem {mean:.3f} over {len(ps)} problems "
+                     f"({len({p['run'] for p in ps})} runs)")
+    if True in per_arm and False in per_arm:
+        common = sorted(set(per_arm[True]) & set(per_arm[False]))
+        diffs = [per_arm[True][k] - per_arm[False][k] for k in common]
+        if diffs:
+            p = sign_test(diffs)
+            lines.append(f"  paired (notes - no notes) over {len(diffs)} problems: mean {sum(diffs) / len(diffs):+.3f} "
+                         f"median {statistics.median(diffs):+.3f}  "
+                         f"(+{sum(1 for d in diffs if d > 0)} / -{sum(1 for d in diffs if d < 0)} / "
+                         f"0 {sum(1 for d in diffs if d == 0)})  sign test p = "
+                         f"{'--' if p is None else f'{p:.3g}'}")
+        else:
+            lines.append("  paired: no problem processed in both arms")
+    lines.append("  mean bits by position tercile (early / middle / late):")
+    for flag in (False, True):
+        ps = arms[flag]
+        if not ps:
+            continue
+        cells = []
+        by_run: dict[str, list[dict]] = defaultdict(list)
+        for p in ps:
+            by_run[p["run"]].append(p)
+        terc: dict[int, list[float]] = defaultdict(list)
+        for rps in by_run.values():
+            n = max(p.get("position") or 0 for p in rps)
+            for p in rps:
+                pos = (p.get("position") or 1) - 1
+                terc[min(2, 3 * pos // max(n, 1))].append(p["surprise"])
+        for t in range(3):
+            v = terc.get(t, [])
+            cells.append(f"{sum(v) / len(v):.3f} (n={len(v)})" if v else "--")
+        lines.append(f"    {'notes on ' if flag else 'notes off'}: " + " / ".join(cells))
+    return "\n".join(lines)
+
+
+def side_result(done: list[dict]) -> str:
+    lines = ["== Side result: does cheap surprise predict model surprise? (A5 no-notes arm) =="]
+    ps = [p for p in _a5_arms(done)[False] if p.get("scan_score") is not None]
+    by_id: dict[str, dict] = {}
+    for p in ps:
+        d = by_id.setdefault(p["id"], {"score": p["scan_score"], "J": p.get("scan_J"), "bits": []})
+        d["bits"].append(p["surprise"])
+    rows = [(d["score"], d["J"], sum(d["bits"]) / len(d["bits"])) for d in by_id.values()]
+    if not rows:
+        lines.append("  (no scan problems in a no-notes predict-only run)")
+        return "\n".join(lines)
+    for i, label in ((0, "scan score J/L"), (1, "golf jump J")):
+        rho = spearman([r[i] for r in rows], [r[2] for r in rows])
+        lines.append(f"  Spearman({label}, mean bits) = {'--' if rho is None else f'{rho:+.3f}'}  n = {len(rows)}")
+    return "\n".join(lines)
+
+
 def a4_section(done: list[dict], weaves: list[dict], calls: list[dict]) -> str:
-    lines = ["== A4: assume the prior, widen on surprise =="]
+    lines = ["== A4: assume the prior, widen on surprise (trigger: 4 bits; run 1: |log2| >= 1) =="]
+    done = [p for p in done if not p.get("predict_only")]
     runs_by_breadth: dict[str, set] = defaultdict(set)
     for p in done:
         runs_by_breadth[p.get("breadth", "?")].add(p["run"])
@@ -113,11 +270,13 @@ def a4_section(done: list[dict], weaves: list[dict], calls: list[dict]) -> str:
 def what_if_tree(problems: list[dict]) -> list[str]:
     nodes: dict[str, dict] = {}
     children: dict[str | None, list[str]] = defaultdict(list)
-    rejected = 0
+    rejected = refused = 0
     for r in problems:
         ev = r.get("event")
         if ev == "rejected":
             rejected += 1
+        if ev == "refused_uncheckable":
+            refused += 1
         if ev == "queued" and r["id"] not in nodes:
             nodes[r["id"]] = dict(r)
             children[r.get("parent")].append(r["id"])
@@ -139,5 +298,5 @@ def what_if_tree(problems: list[dict]) -> list[str]:
 
     for root in children.get(None, []):
         walk(root, 0)
-    lines.append(f"  ({rejected} mutations rejected)")
+    lines.append(f"  ({rejected} mutations rejected, {refused} refused as uncheckable)")
     return lines

@@ -1,9 +1,9 @@
 """Calibration per (domain, kind, level, model) over the joined prediction rows.
 
 Metrics: n, n_scored, accuracy, mean confidence, gap (accuracy - mean
-confidence), Brier, 80% interval coverage (interval kind), median signed log2
-error of the point estimate (interval kind), a runs test and a
-Bonferroni-corrected change-point test.
+confidence), Brier, mean surprise in bits (distribution kind, run 2), 80% interval
+coverage and median signed log2 error of the point estimate (interval kind, run 1
+stores only), a runs test and a Bonferroni-corrected change-point test.
 
 ``runs``, ``change_point`` and ``_fisher`` are ported from
 ``C:/Users/grant/reticle/reticle/judgement.py`` (functions of the same names,
@@ -96,6 +96,8 @@ def summarize(rows: list[dict]) -> dict:
                          if intervals else None)
     errs = [r["log2_err"] for r in rows if r.get("log2_err") is not None]
     out["median_log2_err"] = statistics.median(errs) if errs else None
+    b = [r["bits"] for r in rows if r.get("bits") is not None]
+    out["mean_bits"] = sum(b) / len(b) if b else None
     return out
 
 
@@ -113,7 +115,7 @@ def _f(x, fmt="{:.2f}"):
 def render_table(joined: list[dict]) -> str:
     lines = [f"{'domain':<8} {'kind':<16} {'level':<9} {'model':<20} {'n':>4} {'scr':>4} "
              f"{'acc':>5} {'conf':>5} {'gap':>6} {'brier':>6} {'cov80':>6} {'medlog2':>8} "
-             f"{'runs z':>7} {'chg p':>6}"]
+             f"{'bits':>6} {'runs z':>7} {'chg p':>6}"]
     for (dom, kind, level, by), m in table(joined).items():
         rz = f"{m['runs'][2]:+.2f}" if m["runs"] else "--"
         cp = _f(m["change"]["p"]) if m["change"] else "--"
@@ -121,7 +123,7 @@ def render_table(joined: list[dict]) -> str:
                      f"{m['n']:>4} {m['n_scored']:>4} {_f(m['acc']):>5} {_f(m['mean_conf']):>5} "
                      f"{_f(m['gap'], '{:+.2f}'):>6} {_f(m['brier'], '{:.3f}'):>6} "
                      f"{_f(m['coverage80']):>6} {_f(m['median_log2_err'], '{:+.2f}'):>8} "
-                     f"{rz:>7} {cp:>6}")
+                     f"{_f(m['mean_bits']):>6} {rz:>7} {cp:>6}")
     return "\n".join(lines)
 
 
@@ -131,17 +133,15 @@ def feedback_text(joined: list[dict], domain: str, model: str) -> str:
     if not rows:
         return "No scored predictions yet for this problem family."
     lines = []
-    for kind in ("interval", "bound_holds", "mutation_effect", "recognition"):
+    for kind in ("distribution", "top1", "bound_holds", "mutation_effect", "recognition"):
         m = summarize([r for r in rows if r.get("kind") == kind])
         if not m["n_scored"]:
             continue
-        if kind == "interval":
-            med = m["median_log2_err"]
-            direction = ("" if med is None else
-                         " (your point estimates run high)" if med > 0.1 else
-                         " (your point estimates run low)" if med < -0.1 else "")
-            lines.append(f"- 80% intervals: {m['n_scored']} scored, coverage {m['coverage80']:.0%} "
-                         f"(target 80%); median signed log2(point+1 / f+1) = {_f(med, '{:+.2f}')}{direction}.")
+        if kind == "distribution":
+            lines.append(f"- value distributions: {m['n_scored']} scored, mean surprise "
+                         f"{_f(m['mean_bits'])} bits per value (-log2 of the probability you gave the "
+                         f"true value); the true value was among your candidates {m['acc']:.0%} of the "
+                         f"time, against a stated candidate mass of {m['mean_conf']:.0%}.")
         else:
             lines.append(f"- {kind}: {m['n_scored']} scored, stated mean confidence {m['mean_conf']:.2f}, "
                          f"actual accuracy {m['acc']:.2f}, Brier {m['brier']:.3f}.")

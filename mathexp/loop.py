@@ -1,15 +1,19 @@
 """The weaving loop: predict -> compute -> weave -> check -> what-if, per problem.
 
-Order inside one problem (PROTOCOL.md "One iteration"):
+Order inside one problem (PROTOCOL.md "One iteration", with run 2's bits):
 
-1. predict f(n) with 80% intervals (+ recognition) -- written to the store first;
-2. compute f(n) by brute force, only for n whose interval prediction is on disk
-   (refusal (a)), and score the predictions; score pending mutation-effect
+1. predict a distribution over f(n) for each n (+ recognition) -- written to the
+   store first, as a ``distribution`` row and a ``top1`` row per n;
+2. compute f(n) by brute force, only for n whose value prediction is on disk
+   (refusal (a)), and score the predictions in bits; score pending mutation-effect
    predictions whose child is this problem;
 3. choose the breadth (arm A4) from the surprise and the prior bridges;
 4. weave (one call; adaptive narrow mode may escalate to a second, wide call),
    writing each bound's P(holds) before checking it;
-5. propose what-if mutations, validate them (refusal (c)) and queue them.
+5. propose what-if mutations, validate them (refusal (c)), refuse uncheckable ones
+   (fewer than ``MIN_CHECKABLE`` values) and queue the rest.
+
+``--predict-only`` (arm A5) stops after step 2.
 """
 
 from __future__ import annotations
@@ -32,26 +36,49 @@ from .problems.base import Family
 from .store import Refusal, Store, new_id, now
 from .truth import DEFAULT_TIME_LIMIT, TruthCache
 
-#: A problem is *surprising* iff max over n (f known) of |log2((point+1)/(f+1))|
-#: reaches this. Fixed by PROTOCOL.md "Definitions"; deliberately not a flag.
-SURPRISE_TRIGGER_LOG2 = 1.0
+#: A problem is *surprising* iff for some n (f known) the true value got at most
+#: 2**-4 probability: surprise >= 4 bits. Fixed by PROTOCOL.md "Run 2"; not a flag.
+SURPRISING_BITS = 4.0
+#: Surprise at one n is capped here (a zero-probability value scores this).
+MAX_BITS = 30.0
+#: A mutated child is queued only if brute force yields at least this many values.
+MIN_CHECKABLE = 4
+#: Arm A5: at most this many notes (earlier problems of the same family) in the prompt.
+NOTES_CAP = 12
 
 #: Arm A4 breadths.
 NARROW_K, NARROW_M = 1, 1
 WIDE_K, WIDE_M, WIDE_MIN_OUTSIDE = 5, 5, 3
 
 
-def surprise_stats(preds: dict[int, dict], truth: dict[int, int | None]) -> tuple[float | None, float | None]:
-    """(mean, max) over n with known f of |log2((point+1)/(f+1))|; (None, None) if none known."""
-    errs = [abs(math.log2((max(preds[n]["point"], 0) + 1) / (f + 1)))
-            for n, f in truth.items() if f is not None and n in preds]
-    if not errs:
+def bits(dist: dict, f: int, trivial: int) -> tuple[float, float]:
+    """(bits, p_true) for one n, PROTOCOL.md "Model surprise in bits".
+
+    P(f) is the candidate's mass if f was listed; otherwise the residual mass
+    ``other`` shared equally over the integers in [0, trivial] that were not listed.
+    Surprise = -log2 P(f), capped at MAX_BITS (P = 0 scores the cap)."""
+    p_true = None
+    for v, pr in dist["candidates"]:
+        if v == f:
+            p_true = pr
+    if p_true is None:
+        listed = {v for v, _ in dist["candidates"] if 0 <= v <= trivial}
+        rest = trivial + 1 - len(listed)
+        p_true = dist["other"] / rest if rest > 0 and 0 <= f <= trivial else 0.0
+    b = MAX_BITS if p_true <= 0 else min(MAX_BITS, max(0.0, -math.log2(p_true)))
+    return b, p_true
+
+
+def surprise_stats(bits_by_n: dict[int, float]) -> tuple[float | None, float | None]:
+    """(mean, max) of the per-n bits; (None, None) if no n was scored."""
+    if not bits_by_n:
         return None, None
-    return sum(errs) / len(errs), max(errs)
+    vals = list(bits_by_n.values())
+    return sum(vals) / len(vals), max(vals)
 
 
 def is_surprising(surprise_max: float | None) -> bool:
-    return surprise_max is not None and surprise_max >= SURPRISE_TRIGGER_LOG2
+    return surprise_max is not None and surprise_max >= SURPRISING_BITS
 
 
 def bridge_importance(weaves: list[dict], model: str | None = None) -> dict[str, dict]:
@@ -96,6 +123,10 @@ class Config:
     max_calls: int = 30
     max_problems: int | None = None
     seeds: list[str] | None = None
+    seeds_from: str | None = None
+    seeds_top: int | None = None
+    predict_only: bool = False
+    notes: bool = False
     run_id: str = "auto"
     seed: int = 0
     time_limit: float = DEFAULT_TIME_LIMIT
@@ -126,6 +157,8 @@ class Loop:
         self.truths: dict[str, dict[int, int | None]] = {}
         self.surprises: dict[str, float | None] = {}
         self.pending_effects: dict[str, list[dict]] = {}
+        self.notes: dict[str, list[dict]] = {}  # family -> processed problems, oldest first
+        self.position = 0
         self.sys_version, self.system = prompts.system_prompt()
         self.log = cfg.log
 
@@ -164,7 +197,41 @@ class Loop:
     def push(self, item: dict, priority: float) -> None:
         heapq.heappush(self.frontier, _Item((-priority, next(self.counter)), item))
 
+    def scan_items(self) -> list[dict]:
+        """Problems from a scan selection file, in a seeded random order of the
+        selected list (the same order for the same --seed)."""
+        rows = [json.loads(x) for x in Path(self.cfg.seeds_from).read_text(encoding="utf-8").splitlines()
+                if x.strip()]
+        rows.sort(key=lambda r: r["rank"])
+        if self.cfg.seeds_top is not None:
+            rows = rows[: self.cfg.seeds_top]
+        random.Random(self.cfg.seed).shuffle(rows)
+        items = []
+        for r in rows:
+            fam = get_family(r["family"])
+            spec = {k: v for k, v in r["spec"].items() if v is not None}
+            spec["ns"] = list(r["ns"])
+            errs = fam.validate(spec)
+            if errs:
+                raise ValueError(f"scan problem {r['id']} invalid: {errs}")
+            pid = fam.problem_id(spec)
+            if pid != r["id"]:
+                raise ValueError(f"scan problem {r['id']} hashes to {pid}; selection file is stale")
+            items.append({"family": fam.name, "spec": spec, "id": pid, "parent": None, "what_if": None,
+                          "provenance": "scan", "seed_name": None, "known_as": [],
+                          "scan_rank": r["rank"], "scan_score": r["score"], "scan_J": r["J"],
+                          "scan_L": r["L"]})
+        return items
+
     def seed_frontier(self) -> None:
+        if self.cfg.seeds_from:
+            for item in self.scan_items():
+                if item["id"] in self.seen:
+                    continue
+                self.seen.add(item["id"])
+                self.store.append("problems", {"event": "queued", "when": now(), "run": self.run, **item})
+                self.push(item, math.inf)
+            return
         names = self.cfg.seeds
         for s in prompts.seeds():
             if names and s["name"] not in names:
@@ -207,18 +274,37 @@ class Loop:
         text = calibration.feedback_text(self.store.joined_predictions(), fam.name, self.model_id)
         return "\nYour running calibration on this problem family so far:\n" + text + "\n"
 
+    def notes_text(self, fam: Family) -> tuple[str, int]:
+        """Arm A5: statements and true sequences of the problems already processed in
+        this run in the same family, most recent first, at most NOTES_CAP."""
+        if not self.cfg.notes:
+            return "", 0
+        prev = list(reversed(self.notes.get(fam.name, [])))[:NOTES_CAP]
+        if not prev:
+            return "\nNotes: no problems of this kind have been computed yet in this session.\n", 0
+        lines = ["", "Notes: problems of the same kind computed earlier in this session, most recent "
+                 "first, with their true values of f:"]
+        for i, nt in enumerate(prev, 1):
+            vals = ", ".join(f"f({n}) = {f}" for n, f in nt["truth"].items())
+            lines.append(f"{i}. {nt['statement']}\n   {vals}")
+        return "\n".join(lines) + "\n", len(prev)
+
     def process(self, item: dict) -> None:
         fam = get_family(item["family"])
         spec, pid = item["spec"], item["id"]
         ns = list(spec["ns"])
         statement = fam.render(spec)
+        self.position += 1
         rec = {"event": "done", "when": None, "run": self.run, "id": pid, "family": fam.name,
                "parent": item["parent"], "what_if": item["what_if"], "provenance": item["provenance"],
                "seed_name": item.get("seed_name"), "spec": spec, "statement": statement,
-               "breadth": self.cfg.breadth, "policy": self.cfg.policy, "feedback": self.cfg.feedback,
-               "menu": self.cfg.menu, "truth": {}, "timings": {}, "surprise": None, "surprise_max": None,
-               "surprising": None, "prior_bridges": [], "prior_source": None, "mode": None,
-               "escalated": False, "calls_used": 0, "stopped": None}
+               "breadth": None if self.cfg.predict_only else self.cfg.breadth, "policy": self.cfg.policy,
+               "feedback": self.cfg.feedback, "menu": self.cfg.menu, "predict_only": self.cfg.predict_only,
+               "notes": self.cfg.notes, "notes_shown": 0, "position": self.position,
+               **{k: item[k] for k in ("scan_rank", "scan_score", "scan_J", "scan_L") if k in item},
+               "truth": {}, "timings": {}, "surprise_unit": "bits", "bits": {}, "surprise": None,
+               "surprise_max": None, "surprising": None, "prior_bridges": [], "prior_source": None,
+               "mode": None, "escalated": False, "calls_used": 0, "stopped": None}
         calls0 = self.calls
         try:
             self._process(item, fam, spec, pid, ns, statement, rec)
@@ -226,29 +312,41 @@ class Loop:
             rec["when"] = now()
             rec["calls_used"] = self.calls - calls0
             self.store.append("problems", rec)
+            known = {n: f for n, f in self.truths.get(pid, {}).items() if f is not None}
+            if known:
+                self.notes.setdefault(fam.name, []).append({"statement": statement, "truth": known})
 
     def _process(self, item, fam, spec, pid, ns, statement, rec) -> None:
         # 1. predict
         ctx = {"step": "predict", "family": fam, "spec": spec, "ns": ns, "seed_name": item.get("seed_name")}
+        notes, rec["notes_shown"] = self.notes_text(fam)
         parsed, call_id, ver = self.ask(
             "predict", "predict",
-            {"problem": statement, "ns": ", ".join(map(str, ns)), "feedback": self.feedback(fam)},
+            {"problem": statement, "ns": ", ".join(map(str, ns)), "feedback": self.feedback(fam),
+             "notes": notes},
             "predict", ctx, lambda t: prompts.parse_predict(t, ns))
         if parsed is None:
             rec["stopped"] = "no predictions (budget or parse failure); truth not computed"
             return
         preds = parsed["predictions"]
-        interval_ids = {}
+        dist_ids, top_ids = {}, {}
         for n in ns:
             if n not in preds:
                 continue
-            p = preds[n]
-            r = self.store.predict(run=self.run, by=self.model_id, domain=fam.name, kind="interval",
-                                   level="value", claim=f"f({n}) in [{p['lo']:g}, {p['hi']:g}]",
-                                   confidence=0.8, problem=pid, call=call_id, prompt_version=ver,
-                                   n=n, point=p["point"], lo=p["lo"], hi=p["hi"],
-                                   provenance=item["provenance"])
-            interval_ids[n] = r["id"]
+            d = preds[n]
+            listed = [v for v, _ in d["candidates"]]
+            common = dict(problem=pid, call=call_id, prompt_version=ver, n=n, provenance=item["provenance"],
+                          by=self.model_id, domain=fam.name, run=self.run)
+            r = self.store.predict(kind="distribution", level="value",
+                                   claim=f"f({n}) in {{{', '.join(map(str, listed))}}}",
+                                   confidence=min(1.0, sum(p for _, p in d["candidates"])),
+                                   candidates=d["candidates"], other=d["other"],
+                                   normalized=d["normalized"], trivial=fam.trivial_bound(spec, n), **common)
+            dist_ids[n] = r["id"]
+            if d["candidates"]:
+                top, p_top = d["candidates"][0]
+                top_ids[n] = self.store.predict(kind="top1", level="value", claim=f"f({n}) = {top}",
+                                                confidence=p_top, top=top, **common)["id"]
         rec_id = None
         if parsed["recognized_as"] and parsed["p_recognized"] is not None:
             rec_id = self.store.predict(
@@ -260,36 +358,45 @@ class Loop:
         # 2. compute (refusal (a) inside), then score
         truth: dict[int, int | None] = {}
         for n in ns:
-            if n not in interval_ids:
+            if n not in dist_ids:
                 continue
-            self.store.require_interval_predictions(pid, n)
+            self.store.require_value_predictions(pid, n)
             value, secs, cached = self.cache.get(fam, spec, n, self.cfg.time_limit)
             truth[n] = value
             rec["timings"][str(n)] = {"seconds": round(secs, 4), "cached": cached}
         rec["truth"] = {str(n): v for n, v in truth.items()}
         self.truths[pid] = truth
-        for n, rid in interval_ids.items():
-            f, p = truth[n], preds[n]
+        bits_by_n: dict[int, float] = {}
+        for n, rid in dist_ids.items():
+            f, d = truth[n], preds[n]
             if f is None:
                 self.store.outcome(rid, "couldnt-tell", None)
+                if n in top_ids:
+                    self.store.outcome(top_ids[n], "couldnt-tell", None)
                 continue
-            err = math.log2((max(p["point"], 0) + 1) / (f + 1))
-            self.store.outcome(rid, "right" if p["lo"] <= f <= p["hi"] else "wrong", f,
-                               log2_err=err, abs_log2_err=abs(err))
+            b, p_true = bits(d, f, fam.trivial_bound(spec, n))
+            bits_by_n[n] = b
+            listed = any(v == f for v, _ in d["candidates"])
+            self.store.outcome(rid, "right" if listed else "wrong", f, bits=b, p_true=p_true)
+            if n in top_ids:
+                self.store.outcome(top_ids[n], "right" if d["candidates"][0][0] == f else "wrong", f)
         if rec_id:
             if item["provenance"] == "named":
                 ok = prompts.recognition_matches(parsed["recognized_as"], item.get("known_as", []))
                 self.store.outcome(rec_id, "right" if ok else "wrong", item.get("seed_name"))
             else:
-                self.store.outcome(rec_id, "couldnt-tell", "variant")
+                self.store.outcome(rec_id, "couldnt-tell", item["provenance"])
         self._score_effects(pid, truth)
-        mean, mx = surprise_stats(preds, truth)
+        mean, mx = surprise_stats(bits_by_n)
+        rec["bits"] = {str(n): round(b, 4) for n, b in bits_by_n.items()}
         rec["surprise"], rec["surprise_max"] = mean, mx
         self.surprises[pid] = mean
         rec["surprising"] = is_surprising(mx)
         known = {n: f for n, f in truth.items() if f is not None}
-        self.log(f"  f = {known}  surprise mean={mean if mean is None else round(mean, 3)} "
-                 f"max={mx if mx is None else round(mx, 3)}")
+        self.log(f"  f = {known}  surprise mean={mean if mean is None else round(mean, 2)} bits "
+                 f"max={mx if mx is None else round(mx, 2)} bits")
+        if self.cfg.predict_only:
+            return
 
         # 3. breadth (arm A4)
         prior, source = prior_bridges(self.store, fam.name, item["parent"], self.model_id)
@@ -313,6 +420,25 @@ class Loop:
 
         # 5. mutate
         self.mutate(item, fam, spec, pid, truth, m)
+
+    def checkable_values(self, fam: Family, spec: dict) -> int:
+        """How many values brute force yields on the spec's ns, counted in increasing n
+        and stopping at the first timeout (or as soon as MIN_CHECKABLE are found).
+
+        The values go to the truth cache only: nothing reaches the store or a prompt,
+        and refusal (a) still gates the computation the loop scores."""
+        ns = sorted(spec["ns"])
+        if len(ns) < MIN_CHECKABLE:
+            return len(ns)
+        count = 0
+        for n in ns:
+            value, _, _ = self.cache.get(fam, spec, n, self.cfg.time_limit)
+            if value is None:
+                break
+            count += 1
+            if count >= MIN_CHECKABLE:
+                break
+        return count
 
     def _score_effects(self, child: str, child_truth: dict) -> None:
         for pend in self.pending_effects.pop(child, []):
@@ -416,6 +542,12 @@ class Loop:
                 self.store.append("problems", {"event": "duplicate", "id": cid, **base})
                 continue
             self.seen.add(cid)
+            n_values = self.checkable_values(fam, child)
+            if n_values < MIN_CHECKABLE:
+                self.store.append("problems", {"event": "refused_uncheckable", "id": cid,
+                                               "values_computable": n_values, **base})
+                self.log(f"  mutation refused: only {n_values} computable values on ns {child['ns']}")
+                continue
             pred = self.store.predict(
                 run=self.run, by=self.model_id, domain=fam.name, kind="mutation_effect", level="mechanism",
                 claim=f"child {cid} has {mu['predicted_effect']} f than parent {pid} at the largest common n",

@@ -23,7 +23,8 @@ def test_mock_run_then_report(tmp_path, capsys):
     assert any(w["status"] == "consistent" and not w["win"] for w in weaves)  # valid but loose
     preds = _rows(store / "predictions.jsonl")
     kinds = {p["kind"] for p in preds}
-    assert {"interval", "bound_holds", "mutation_effect", "recognition", "outcome"} <= kinds
+    assert {"distribution", "top1", "bound_holds", "mutation_effect", "recognition", "outcome"} <= kinds
+    assert "interval" not in kinds
     # every prediction row was written before its outcome row
     seen = set()
     for p in preds:

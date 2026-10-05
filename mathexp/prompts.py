@@ -79,6 +79,7 @@ def lemma_menu() -> str:
 
 
 # ---- JSON schemas (passed to --json-schema where supported) ------------------
+MAX_CANDIDATES = 5
 NUM01 = {"type": "number", "minimum": 0, "maximum": 1}
 SCHEMAS = {
     "predict": {
@@ -86,9 +87,12 @@ SCHEMAS = {
         "properties": {
             "predictions": {"type": "array", "items": {
                 "type": "object",
-                "properties": {"n": {"type": "integer"}, "point": {"type": "number"},
-                               "lo": {"type": "number"}, "hi": {"type": "number"}},
-                "required": ["n", "point", "lo", "hi"]}},
+                "properties": {"n": {"type": "integer"},
+                               "candidates": {"type": "array", "maxItems": MAX_CANDIDATES, "items": {
+                                   "type": "array", "minItems": 2, "maxItems": 2,
+                                   "items": {"type": "number"}}},
+                               "other": NUM01},
+                "required": ["n", "candidates", "other"]}},
             "recognized_as": {"type": ["string", "null"]},
             "p_recognized": NUM01},
         "required": ["predictions", "recognized_as", "p_recognized"]},
@@ -139,6 +143,42 @@ def _prob(x) -> float:
     return float(x)
 
 
+def normalize_distribution(candidates, other) -> dict:
+    """Validate one n's distribution. Candidates are [value, prob] pairs (or
+    {value, prob} objects); at most MAX_CANDIDATES after merging repeated values.
+    Integer values only (a float with no fractional part is accepted).
+
+    Masses: if candidates + other sum to more than 1, everything is divided by the
+    sum (PROTOCOL). If they sum to less than 1, the shortfall is added to ``other``
+    (our choice: unassigned mass is residual mass)."""
+    if not isinstance(candidates, list):
+        raise ParseError("predict: candidates must be a list")
+    merged: dict[int, float] = {}
+    for c in candidates:
+        if isinstance(c, dict):
+            c = [c.get("value"), c.get("prob", c.get("p"))]
+        if not isinstance(c, (list, tuple)) or len(c) != 2:
+            raise ParseError(f"predict: bad candidate {c!r}")
+        v, pr = c
+        if isinstance(v, bool) or not isinstance(v, (int, float)) or float(v) != int(v):
+            raise ParseError(f"predict: candidate value must be an integer, got {v!r}")
+        merged[int(v)] = merged.get(int(v), 0.0) + _prob(pr)
+    if len(merged) > MAX_CANDIDATES:
+        raise ParseError(f"predict: more than {MAX_CANDIDATES} candidates")
+    other = _prob(other if other is not None else 0.0)
+    total = sum(merged.values()) + other
+    if total <= 0:
+        raise ParseError("predict: zero total probability")
+    normalized = total > 1 + 1e-9
+    if normalized:
+        merged = {v: pr / total for v, pr in merged.items()}
+        other /= total
+    else:
+        other = 1.0 - sum(merged.values())
+    cands = sorted(([v, pr] for v, pr in merged.items()), key=lambda x: (-x[1], x[0]))
+    return {"candidates": cands, "other": max(0.0, other), "normalized": normalized}
+
+
 def parse_predict(text: str, ns: list[int]) -> dict:
     obj = extract_json(text)
     if not isinstance(obj, dict) or not isinstance(obj.get("predictions"), list):
@@ -147,13 +187,11 @@ def parse_predict(text: str, ns: list[int]) -> dict:
     for p in obj["predictions"]:
         try:
             n = int(p["n"])
-            point, lo, hi = float(p["point"]), float(p["lo"]), float(p["hi"])
+            cands, other = p["candidates"], p.get("other", 0.0)
         except (KeyError, TypeError, ValueError):
             raise ParseError(f"predict: bad item {p!r}") from None
         if n in ns:
-            if lo > hi:
-                lo, hi = hi, lo
-            preds[n] = {"point": point, "lo": lo, "hi": hi}
+            preds[n] = normalize_distribution(cands, other)
     if not preds:
         raise ParseError("predict: no predictions for the requested n")
     rec = obj.get("recognized_as")

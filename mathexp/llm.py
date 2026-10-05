@@ -162,9 +162,11 @@ class OpenRouterBackend(Backend):
 class MockBackend(Backend):
     """Deterministic, seeded test double. Valid JSON for every step.
 
-    - predict: alternates an exact guess (unsurprising) with a 4x overestimate
-      (surprising, |log2| >= 1); the exact guess peeks at the brute force, which
-      is legitimate for a test double and never touches the store.
+    - predict: alternates a distribution with 0.9 on the exact value (unsurprising,
+      about 0.15 bits) with one that puts 0.9 on a 4x overestimate (surprising: the
+      true value gets only a share of the 0.1 residual, so >= 4 bits once the
+      trivial bound exceeds 1); the exact guess peeks at the brute force, which is
+      legitimate for a test double and never touches the store.
     - weave: five bounds -- valid and tight (a constant at the largest computed
       value: a win unless f equals the trivial bound), valid and loose (no win),
       violated (-1), unparseable, and a second loose one -- rotated by one per
@@ -205,8 +207,13 @@ class MockBackend(Backend):
         for n in ctx["ns"]:
             f = fam.truth(spec, n, 10.0)
             f = fam.trivial_bound(spec, n) if f is None else f
-            point = f if exact else 4 * f + 3
-            preds.append({"n": n, "point": point, "lo": max(0, point - 1), "hi": point + 1})
+            if exact:
+                cands = [[f, 0.9], [f + 1, 0.05]]
+                other = 0.05
+            else:
+                cands = [[4 * f + 3, 0.9]]
+                other = 0.1
+            preds.append({"n": n, "candidates": cands, "other": other})
         named = ctx.get("seed_name")
         return {"predictions": preds,
                 "recognized_as": named.replace("_", " ") if named else None,

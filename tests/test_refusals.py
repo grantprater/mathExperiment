@@ -13,18 +13,18 @@ from mathexp.store import Refusal, Store
 def test_a_truth_needs_interval_predictions_on_disk(tmp_path):
     store = Store(tmp_path / "s", "mock")
     with pytest.raises(Refusal):
-        store.require_interval_predictions("abc", 3)
+        store.require_value_predictions("abc", 3)
     store.predict(run="r", by="m", domain="setfam", kind="interval", level="value", claim="x",
                   confidence=0.8, problem="abc", call=None, prompt_version="v", n=3, point=1, lo=0, hi=2)
-    assert store.require_interval_predictions("abc", 3)["n"] == 3
+    assert store.require_value_predictions("abc", 3)["n"] == 3
     with pytest.raises(Refusal):
-        store.require_interval_predictions("abc", 4)
+        store.require_value_predictions("abc", 4)
 
 
-def test_a_loop_refuses_when_intervals_were_not_written(tmp_path):
+def test_a_loop_refuses_when_value_predictions_were_not_written(tmp_path):
     class DroppingStore(Store):
-        def predict(self, **kw):  # simulate a bug that loses the interval rows
-            if kw["kind"] == "interval":
+        def predict(self, **kw):  # simulate a bug that loses the distribution rows
+            if kw["kind"] == "distribution":
                 return {"id": "lost"}
             return super().predict(**kw)
 

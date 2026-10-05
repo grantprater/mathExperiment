@@ -13,8 +13,9 @@ Files, all in one store directory:
 Rules enforced in code (PROTOCOL.md: "every convention that was merely written
 down got violated again"):
 
-- (a) :meth:`Store.require_interval_predictions` refuses truth computation for
-  a (problem, n) until its interval prediction is on disk;
+- (a) :meth:`Store.require_value_predictions` refuses truth computation for
+  a (problem, n) until its value-level prediction (a distribution; an interval in
+  run 1) is on disk;
 - (b) a store opened for the ``mock`` backend refuses the repo's ``store/``.
 """
 
@@ -29,6 +30,11 @@ from pathlib import Path
 from . import REPO
 
 FILES = ("predictions", "problems", "weaves", "calls")
+#: Prediction kinds that count as "f(n) was predicted" for refusal (a): run 2's
+#: distribution, and run 1's interval (kept so run-1 stores still read).
+VALUE_KINDS = ("distribution", "interval")
+#: Outcome fields folded into the joined prediction rows.
+OUTCOME_FIELDS = ("abs_log2_err", "log2_err", "bits", "p_true")
 REAL_STORE = (REPO / "store").resolve()
 MOCK_DEFAULT = REPO / "scratch" / "store-mock"
 
@@ -93,13 +99,13 @@ class Store:
                "outcome": outcome, "observed": observed, **extra}
         return self.append("predictions", row)
 
-    def require_interval_predictions(self, problem: str, n: int) -> dict:
-        """Refusal (a): truth for (problem, n) needs its interval prediction on disk."""
+    def require_value_predictions(self, problem: str, n: int) -> dict:
+        """Refusal (a): truth for (problem, n) needs its value prediction on disk."""
         for r in self.rows("predictions"):
-            if r.get("kind") == "interval" and r.get("problem") == problem and r.get("n") == n:
+            if r.get("kind") in VALUE_KINDS and r.get("problem") == problem and r.get("n") == n:
                 return r
         raise Refusal(f"refusing to compute f({n}) for problem {problem}: "
-                      f"no interval prediction has been written for it")
+                      f"no value prediction has been written for it")
 
     def joined_predictions(self) -> list[dict]:
         """Prediction rows with their latest outcome folded in, in file (time) order."""
@@ -115,6 +121,6 @@ class Store:
             o = outs.get(r["id"])
             if o:
                 r = {**r, "outcome": o["outcome"], "observed": o.get("observed"),
-                     **{k: v for k, v in o.items() if k in ("abs_log2_err", "log2_err")}}
+                     **{k: v for k, v in o.items() if k in OUTCOME_FIELDS}}
             joined.append(r)
         return joined

@@ -4,7 +4,8 @@ import random
 import pytest
 
 from mathexp import calibration as C
-from mathexp.loop import SURPRISE_TRIGGER_LOG2, is_surprising, surprise_stats
+from mathexp.loop import MAX_BITS, SURPRISING_BITS, bits, is_surprising, surprise_stats
+from mathexp.prompts import ParseError, normalize_distribution
 
 
 def _row(kind, conf, outcome, **kw):
@@ -54,25 +55,59 @@ def test_change_point_quiet_on_coin_flips():
     assert fired <= 10
 
 
-def test_surprise_trigger():
-    assert SURPRISE_TRIGGER_LOG2 == 1.0
-    # point 7 vs f 3: log2(8/4) = 1 -> surprising (the threshold is inclusive)
-    mean, mx = surprise_stats({3: {"point": 7}, 4: {"point": 4}}, {3: 3, 4: 4})
-    assert mx == pytest.approx(1.0) and mean == pytest.approx(0.5)
-    assert is_surprising(mx)
-    # only n with known f count
-    mean, mx = surprise_stats({3: {"point": 3}, 4: {"point": 100}}, {3: 3, 4: None})
-    assert mx == 0 and not is_surprising(mx)
-    assert surprise_stats({3: {"point": 3}}, {3: None}) == (None, None)
+def test_bits_rule():
+    """PROTOCOL.md "Model surprise in bits"."""
+    d = {"candidates": [[4, 0.5], [5, 0.25]], "other": 0.25}
+    # a listed value scores its own mass
+    assert bits(d, 4, 10) == (pytest.approx(1.0), 0.5)
+    assert bits(d, 5, 10)[0] == pytest.approx(2.0)
+    # an unlisted value shares the residual equally over [0, trivial] minus the listed
+    # values: 11 values 0..10, 2 listed, so 9 share 0.25
+    b, p = bits(d, 7, 10)
+    assert p == pytest.approx(0.25 / 9) and b == pytest.approx(-math.log2(0.25 / 9))
+    # listed values outside [0, trivial] do not shrink the share
+    d2 = {"candidates": [[40, 0.5]], "other": 0.5}
+    assert bits(d2, 3, 3)[1] == pytest.approx(0.5 / 4)
+    # zero mass on the truth scores the 30-bit cap, as does a tiny mass
+    assert bits({"candidates": [[1, 1.0]], "other": 0.0}, 2, 10) == (MAX_BITS, 0.0)
+    assert bits({"candidates": [[1, 1 - 1e-12]], "other": 1e-12}, 2, 10)[0] == MAX_BITS
+    # a certain, correct prediction scores 0 bits
+    assert bits({"candidates": [[2, 1.0]], "other": 0.0}, 2, 10)[0] == 0.0
+
+
+def test_distribution_normalisation():
+    # masses summing to more than 1 are divided by the sum
+    d = normalize_distribution([[3, 0.8], [4, 0.6]], 0.2)
+    assert d["normalized"] and d["other"] == pytest.approx(0.2 / 1.6)
+    assert d["candidates"] == [[3, pytest.approx(0.5)], [4, pytest.approx(0.375)]]
+    # a shortfall goes to the residual; repeated values merge; sorted by mass
+    d = normalize_distribution([[5, 0.2], [3, 0.3], [5, 0.1]], 0.1)
+    assert not d["normalized"] and d["other"] == pytest.approx(0.4)
+    assert {v: p for v, p in d["candidates"]} == {5: pytest.approx(0.3), 3: pytest.approx(0.3)}
+    assert normalize_distribution([[1, 0.1], [2, 0.6]], 0.3)["candidates"][0][0] == 2
+    with pytest.raises(ParseError):
+        normalize_distribution([[1, 0.1]] * 1 + [[i, 0.1] for i in range(2, 8)], 0.0)  # 7 values
+    with pytest.raises(ParseError):
+        normalize_distribution([[1.5, 0.5]], 0.5)  # not an integer
+    with pytest.raises(ParseError):
+        normalize_distribution([[1, 1.5]], 0.0)  # mass out of range
+
+
+def test_surprise_trigger_in_bits():
+    assert SURPRISING_BITS == 4.0
+    mean, mx = surprise_stats({3: 1.0, 4: 4.0})
+    assert mean == pytest.approx(2.5) and mx == 4.0
+    assert is_surprising(mx)  # inclusive: P(f) = 1/16
+    assert not is_surprising(3.99)
+    assert surprise_stats({}) == (None, None)
     assert not is_surprising(None)
-    _, mx = surprise_stats({5: {"point": 10}}, {5: 6})  # log2(11/7) < 1
-    assert mx == pytest.approx(math.log2(11 / 7)) and not is_surprising(mx)
-    _, mx = surprise_stats({5: {"point": 1}}, {5: 6})  # underestimates count too
-    assert is_surprising(mx)
 
 
 def test_feedback_text():
-    rows = [_row("interval", 0.8, "right", log2_err=1.0), _row("interval", 0.8, "wrong", log2_err=2.0)]
+    rows = [_row("distribution", 0.9, "right", bits=1.0), _row("distribution", 0.9, "wrong", bits=6.0),
+            _row("top1", 0.8, "right"), _row("top1", 0.6, "wrong")]
     text = C.feedback_text(rows, "setfam", "m")
-    assert "coverage 50%" in text and "run high" in text
+    assert "mean surprise 3.50 bits" in text and "candidates 50%" in text
+    assert "- top1: 2 scored, stated mean confidence 0.70, actual accuracy 0.50" in text
+    assert C.summarize(rows[:2])["mean_bits"] == pytest.approx(3.5)
     assert "No scored" in C.feedback_text(rows, "addfree", "m")
