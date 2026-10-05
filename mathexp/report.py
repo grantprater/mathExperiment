@@ -93,7 +93,10 @@ def a4_section(done: list[dict], weaves: list[dict], calls: list[dict]) -> str:
     for w in weaves:
         if w.get("win"):
             wins_by_problem[(w["run"], w["problem"])].append(w)
-    narrow = [p for p in done if p.get("breadth") == "adaptive" and p.get("mode") == "narrow"]
+    woven = {(w["run"], w["problem"]) for w in weaves}
+    # only narrow problems whose narrow weave actually ran (the budget can stop a run first)
+    narrow = [p for p in done if p.get("breadth") == "adaptive" and p.get("mode") == "narrow"
+              and (p.get("escalated") or (p["run"], p["id"]) in woven)]
     held = [p for p in narrow if not p.get("escalated")
             and any(w.get("weave_call") == 1 for w in wins_by_problem[(p["run"], p["id"])])]
     lines.append(f"  adaptive, unsurprising (narrow): prior held {_pct(len(held), len(narrow))}"
