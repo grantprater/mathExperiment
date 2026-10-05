@@ -466,3 +466,39 @@ problem 7eadb2495056 (variant): setfam {"p": 5, "size_mod": [2, 3], "int_mod": n
   weave[2/probe] incidence_matrix+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 4) + comb(n, 2) + comb(n, 3)' -> consistent tight_at=[]
   weave[3/wide3] graph_spectrum+pigeonhole: g = 'comb(n,2)+comb(n,3)+comb(n,7)+comb(n,8)' -> consistent tight_at=[3]
 problem 5d764386ed41 (variant): setfam {"p": 5, "size_mod": [2, 3, 4], "int_mod": null, "size_abs": null, "int_abs": [1, 2, 3, 4], "int_min": null}
+  f = {3: 4, 4: 8, 5: 15, 6: 25, 7: 42, 8: 64}  surprise mean=0.34 bits max=0.74 bits
+  weave[1/probe] incidence_matrix+dim_independent: g = '2**n - n - 1' -> consistent tight_at=[3]
+  weave[2/probe] incidence_matrix+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 4)' -> consistent tight_at=[]
+  weave[3/wide3] graph_spectrum+pigeonhole: g = '2**n - 1 - n - comb(n,5) - comb(n,6) - comb(n,10) - comb(n,11)' -> consistent tight_at=[3]
+problem acc77278e2cc (variant): setfam {"p": 5, "size_mod": [1, 2, 3, 4], "int_mod": null, "size_abs": null, "int_abs": [1, 2, 3, 4], "int_min": null}
+  f = {3: 4, 4: 8, 5: 15, 6: 27, 7: 43, 8: 67}  surprise mean=0.49 bits max=1.51 bits
+  weave[1/probe] double_counting+pigeonhole: g = '2**(n-1)' -> consistent WIN tight_at=[3, 4]
+  weave[2/probe] incidence_matrix+multilinear_dim+dim_independent: g = 'binom_sum(n, n) - 1' -> consistent tight_at=[]
+  weave[3/wide3] translates+disjoint_translates: g = '2**(n-1)' -> consistent WIN tight_at=[3, 4]
+problem 9c389ee89155 (variant): setfam {"p": 5, "size_mod": [2], "int_mod": [1], "int_min": null}
+  f = {3: 3, 4: 3, 5: 4, 6: 5, 7: 6, 8: 8}  surprise mean=0.05 bits max=0.07 bits
+  weave[1/probe] graph_spectrum+gram_rank: g = 'n + 1' -> consistent WIN tight_at=[]
+  weave[2/probe] graph_spectrum+gram_rank: g = 'n + 1' -> consistent WIN tight_at=[]
+  weave[3/wide3] incidence_matrix+gram_rank: g = 'n + 1' -> consistent WIN tight_at=[]
+  weave[3/wide3] multilinear_poly+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 1)' -> consistent WIN tight_at=[]
+problem 3ec967460443 (variant): setfam {"p": 3, "size_mod": [1, 2], "int_abs": [0, 2]}
+  f = {3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 14}  surprise mean=0.38 bits max=0.74 bits
+  weave[1/probe] multilinear_poly+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[]
+  weave[2/probe] multilinear_poly+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 2) + floor(n/2)' -> consistent WIN tight_at=[]
+  weave[3/wide3] translates+diagonal_criterion+multilinear_dim+dim_independent: g = 'binom_sum(n, 2) + floor(n / 2)' -> consistent WIN tight_at=[]
+problem 8a4ba7cb15ac (variant): setfam {"p": 3, "size_mod": [1, 2], "int_abs": [2]}
+  f = {3: 1, 4: 2, 5: 2, 6: 3, 7: 7, 8: 7}  surprise mean=0.16 bits max=0.56 bits
+  weave[1/probe] multilinear_poly+fisher: g = 'n' -> consistent WIN tight_at=[7]
+  weave[2/probe] multilinear_poly+fisher: g = 'n' -> consistent WIN tight_at=[7]
+  weave[3/wide3] double_counting+fisher: g = 'n' -> consistent WIN tight_at=[7]
+  mutation excluded: 8e35354f6001 is one of run 2's specs
+problem 333d75b11921 (variant): setfam {"p": 5, "size_mod": [2], "int_mod": [0, 1, 2], "size_abs": null, "int_abs": null, "int_min": null}
+  f = {3: 3, 4: 6, 5: 10, 6: 15, 7: 22, 8: 36}  surprise mean=0.02 bits max=0.03 bits
+  weave[1/probe] incidence_matrix+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 3)' -> consistent tight_at=[]
+  weave[2/probe] incidence_matrix+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 3)' -> consistent tight_at=[]
+  weave[3/wide3] graph_spectrum+pigeonhole: g = 'comb(n,2)+comb(n,7)' -> consistent tight_at=[3, 4, 5, 6, 7, 8]
+  weave[3/wide3] graph_spectrum+pigeonhole: g = 'binom_sum(n,7)' -> consistent tight_at=[]
+  weave[3/wide3] graph_spectrum+pigeonhole: g = '2**n' -> consistent tight_at=[]
+problem c2dc838992eb (variant): setfam {"p": 3, "size_mod": [1, 2], "int_mod": [1, 2]}
+  f = {3: 3, 4: 5, 5: 7, 6: 11, 7: 13, 8: 17}  surprise mean=1.98 bits max=3.32 bits
+  weave[1/probe] incidence_matrix+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, n)' -> consistent tight_at=[]
