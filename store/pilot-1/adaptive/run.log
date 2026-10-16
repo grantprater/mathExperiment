@@ -1,0 +1,36 @@
+problem 436287e53b6f (oddtown): setfam {"p": 2, "size_mod": [1], "int_mod": [0]}
+  f = {3: 3, 4: 4, 5: 5, 6: 6, 7: 7}  surprise mean=0.0 max=0.0
+  weave[1/narrow] incidence_matrix+gram_rank: g = 'n' -> consistent WIN tight_at=[3, 4, 5, 6, 7]
+problem 9ed7dee11106 (eventown): setfam {"p": 2, "size_mod": [0], "int_mod": [0]}
+  f = {3: 2, 4: 4, 5: 4, 6: 8, 7: 8}  surprise mean=0.0 max=0.0
+  weave[1/narrow] incidence_matrix+self_orthogonal: g = '2**floor(n/2)' -> consistent WIN tight_at=[3, 4, 5, 6, 7]
+problem b3128e808e36 (reverse_oddtown): setfam {"p": 2, "size_mod": [0], "int_mod": [1]}
+  f = {3: 3, 4: 3, 5: 5, 6: 5, 7: 7}  surprise mean=0.0 max=0.0
+  weave[1/narrow] incidence_matrix+gram_rank: g = 'n + 1' -> consistent WIN tight_at=[]
+problem 60ba88b02573 (fisher_one): setfam {"p": 2, "int_abs": [1]}
+  f = {3: 3, 4: 4, 5: 5, 6: 6, 7: 7}  surprise mean=0.0 max=0.0
+  weave[1/narrow] incidence_matrix+fisher+gram_rank: g = 'n' -> consistent WIN tight_at=[3, 4, 5, 6, 7]
+problem 9a19976f52c0 (fw_mod3): setfam {"p": 3, "size_mod": [2], "int_mod": [0, 1]}
+  f = {3: 3, 4: 6, 5: 10, 6: 15, 7: 21}  surprise mean=0.0 max=0.0
+  weave[1/narrow] incidence_matrix+diagonal_criterion+multilinear_dim: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[]
+problem 5844ffafe50d (cap_set): addfree {"group": "fpk", "p": 3, "equation": "3ap"}
+  f = {1: 2, 2: 4, 3: 9}  surprise mean=0.0 max=0.0
+  weave[1/narrow] slice_rank+slice_rank_diagonal+slice_rank_capset: g = '3*2.756**n' -> consistent tight_at=[]
+  narrow weave found no win: the prior failed, escalating to wide
+  weave[2/wide] slice_rank+slice_rank_diagonal+slice_rank_capset: g = '3*sum(factorial(n)//(factorial(i)*factorial(j)*factorial(n-i-j)) for i in range(0,n+1) for j in range(0,n+1) if i+j<=n and 3*(i+2*j)<=2*n)' -> error tight_at=[]
+  weave[2/wide] orbit_averaging+pigeonhole: g = '2*3**(n-1)' -> consistent WIN tight_at=[1]
+  weave[2/wide] double_counting+pigeonhole: g = '2*3**(n-1)' -> consistent WIN tight_at=[1]
+problem 93f362bec5e1 (sumfree_cyclic): addfree {"group": "cyclic", "p": 3, "equation": "sumfree"}
+  f = {4: 2, 5: 2, 6: 3, 7: 2, 8: 4, 9: 3, 10: 5, 11: 4, 12: 6, 13: 4, 14: 7, 15: 6, 16: 8, 17: 6, 18: 9, 19: 6, 20: 10}  surprise mean=0.0 max=0.0
+  weave[1/narrow] double_counting+disjoint_translates: g = 'floor(n/2)' -> consistent WIN tight_at=[4, 5, 6, 8, 10, 12, 14, 16, 18, 20]
+problem 12f857ca1fa0 (salem_spencer): addfree {"group": "int", "p": 3, "equation": "3ap"}
+  f = {4: 3, 5: 4, 6: 4, 7: 4, 8: 4, 9: 5, 10: 5, 11: 6, 12: 6, 13: 7, 14: 8, 15: 8, 16: 8, 17: 8, 18: 8, 19: 8, 20: 9}  surprise mean=0.009 max=0.152
+  weave[1/narrow] orbit_averaging+pigeonhole: g = 'min(n, 2*ceil(n/3), 5*ceil(n/9))' -> consistent WIN tight_at=[5, 6, 9]
+problem f7cb64d70afa (sidon_int): addfree {"group": "int", "p": 3, "equation": "sidon"}
+  f = {4: 3, 5: 3, 6: 3, 7: 4, 8: 4, 9: 4, 10: 4, 11: 4, 12: 5, 13: 5, 14: 5, 15: 5, 16: 5, 17: 5, 18: 6, 19: 6, 20: 6}  surprise mean=0.0 max=0.0
+  weave[1/narrow] double_counting+sidon_counting: g = 'floor((1+sqrt(8*n-7))/2)' -> consistent WIN tight_at=[4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 18, 19, 20]
+problem 69f0da3ee9f8 (variant): setfam {"p": 2, "int_abs": [0, 1]}
+  f = {3: 7, 4: 11, 5: 16, 6: 22, 7: 29}  surprise mean=0.0 max=0.0
+  weave[1/narrow] incidence_matrix+multilinear_dim+diagonal_criterion: g = 'binom_sum(n, 2)' -> consistent WIN tight_at=[3, 4, 5, 6, 7]
+run a4-adaptive-1: 10 problems, 31 calls, store store\a4-adaptive
+{"run": "a4-adaptive-1", "problems": 10, "calls": 31}

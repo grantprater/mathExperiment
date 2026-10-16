@@ -1,0 +1,57 @@
+{
+ "step": "ping",
+ "prompt_version": "ping-v1",
+ "backend": "claude",
+ "requested_model": "claude-sonnet-5-5",
+ "raw": "{\"ok\": true}",
+ "meta": {
+  "backend": "claude",
+  "requested_model": "claude-sonnet-5-5",
+  "wall_s": 2.71,
+  "returncode": 0,
+  "json_schema": true,
+  "model": "claude-haiku-4-5-20251001",
+  "model_usage": {
+   "claude-haiku-4-5-20251001": {
+    "inputTokens": 907,
+    "outputTokens": 11,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0009620000000000001,
+    "contextWindow": 200000,
+    "maxOutputTokens": 32000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-4-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 52,
+    "cacheReadInputTokens": 521,
+    "cacheCreationInputTokens": 1171,
+    "webSearchRequests": 0,
+    "costUSD": 0.0053121999999999996,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "input_tokens": 2,
+  "cache_creation_input_tokens": 1171,
+  "cache_read_input_tokens": 521,
+  "output_tokens": 52,
+  "total_cost_usd_nominal": 0.0062742,
+  "duration_ms": 1250,
+  "is_error": false,
+  "num_turns": 2,
+  "session_id": "90acdb4a-6ec9-555b-bc23-1d965bde85c1"
+ },
+ "model": "claude-haiku-4-5-20251001",
+ "ok": true,
+ "wall_s": 2.71
+}

@@ -1,0 +1,77 @@
+store runs/run3-a4b/a4b
+A4b: 80 problems processed, 80 completed, 480 calls (480 parsed)
+answering model (from model_usage): claude-sonnet-5-5 x480; stored label differs on claude-haiku-4-5-20251001 x480
+
+== A4b: primary population ==
+  completed 80: P empty (bridge chosen by the method call) 2, prior failed (probe 1 has no win) 25, probe 1 tight 4
+  primary: 49 problems (win, not tight, P from step 2), Y = 1 on 7
+  observed band (completed): tight 4, close 15, moderate 14, loose 46, failed 1
+    primary close     n=15  Y=1 1
+    primary moderate  n=10  Y=1 0
+    primary loose     n=24  Y=1 6
+  M >= 3 bits: 3 of 49 primary problems (6%)
+  strata (completed): mutant 41, seed 39
+  labels: probe bounds outside P 0 of 160 (counted); wide bounds with an excluded label 0 of 125 (not counted), with an off-menu bridge or lemma id 0
+
+== A4b: band-stratified AUC of M (primary; 2000-sample within-band bootstrap, seed 0) ==
+  stratified AUC(M) = 0.717  95% CI [0.519, 0.912]  (1999 usable samples)  supported (interval above 0.5)
+  stratified AUC(M0) = 0.500
+  stratified AUC(V) = 0.602
+  stratified AUC(R) = 0.504
+  stratified AUC(Random) = 0.443
+
+== A4b: secondary measures ==
+  logistic Y ~ band (close / moderate / loose) + log(g - f) + M, n = 49: coefficient of M +0.104  95% CI [-1.220, 3.944]  (1920 usable samples, 80 dropped)
+  unstratified AUC(M) = 0.517, AUC(M0) = 0.269, paired difference +0.248 95% CI [0.016, 0.449]
+  unstratified AUC(R) = 0.699, AUC(V) = 0.609, AUC(Random) = 0.459
+
+== A4b: direction of method surprise ==
+  as_expected 29, disappointment 6, pleasant 14
+  AUC(M if disappointment, else 0) = 0.597  stratified 0.586
+  AUC(M if pleasant surprise, else 0) = 0.333  stratified 0.459
+
+== A4b: policy replay (counted wins and tight bounds per 100 calls) ==
+  80 completed problems: 25 prior failed (always widened), 55 ranked by each signal
+  policy                 widened  calls  wins tight  wins/100 tight/100
+  never (prior failed)        25    345   118    13      34.2       3.8
+  always                      80    400   195    17      48.8       4.2
+  M q=25%                     39    439   144    15      32.8       3.4
+  M0 q=25%                    39    359   137    16      38.2       4.5
+  V q=25%                     39    359   134    13      37.3       3.6
+  R q=25%                     39    359   133    13      37.0       3.6
+  Random q=25%                39    359   140    13      39.0       3.6
+  M q=50%                     53    453   160    15      35.3       3.3
+  M0 q=50%                    53    373   165    17      44.2       4.6
+  V q=50%                     53    373   149    14      39.9       3.8
+  R q=50%                     53    373   149    13      39.9       3.5
+  Random q=50%                53    373   157    15      42.1       4.0
+
+== A4b: replication of run 2 (non-prior win by value surprise) ==
+  value-surprising  14/17
+  not surprising    43/63
+  Fisher p = 0.368
+
+== A4b: seeds and mutants (strata) ==
+  seed    completed 39  primary 29  Y=1 6   stratified AUC(M) 0.567  prior failed 6
+  mutant  completed 41  primary 20  Y=1 1   stratified AUC(M) 1.000  prior failed 19
+
+== Tight importance (pair = bridge + sorted lemmas; A4b counted bounds) ==
+  double_counting      gram_rank                                tight families=1 tie-break=0.799 raw families=1 problems=4 used=4
+  double_counting      fisher                                   tight families=1 tie-break=0.775 raw families=1 problems=5 used=5
+  double_counting      cauchy_schwarz+pigeonhole                tight families=1 tie-break=0.672 raw families=2 problems=4 used=4
+  graph_spectrum       gram_rank                                tight families=1 tie-break=0.671 raw families=1 problems=3 used=3
+  charvec_fp           gram_rank                                tight families=1 tie-break=0.627 raw families=1 problems=6 used=6
+  orbit_averaging      pigeonhole                               tight families=1 tie-break=0.571 raw families=2 problems=3 used=4
+  incidence_matrix     fisher+gram_rank                         tight families=1 tie-break=0.542 raw families=1 problems=3 used=3
+  double_counting      pigeonhole                               tight families=1 tie-break=0.510 raw families=2 problems=18 used=25
+  incidence_matrix     pigeonhole                               tight families=1 tie-break=0.486 raw families=1 problems=2 used=5
+  graph_spectrum       pigeonhole                               tight families=1 tie-break=0.464 raw families=2 problems=5 used=10
+  double_counting      sidon_counting                           tight families=0 tie-break=0.875 raw families=1 problems=4 used=4
+  translates           sidon_counting                           tight families=0 tie-break=0.875 raw families=1 problems=4 used=4
+  top 3 on A4b's wide weaves: double_counting+pigeonhole; orbit_averaging+pigeonhole; graph_spectrum+pigeonhole
+  double_counting pair in that top 3: yes
+
+== Tight importance: out-of-sample Spearman against run 2's A4 stores ==
+  ranked on run2-a4-fixed, run2-a4-adaptive (37 pairs); scored on A4b wide weaves: 16 pairs with >= 3 counted, consistent bounds
+  Spearman(raw importance on run 2, mean f/g on A4b wide) = -0.029  n = 16
+  Spearman(tight importance on run 2, mean f/g on A4b wide) = -0.084  n = 16

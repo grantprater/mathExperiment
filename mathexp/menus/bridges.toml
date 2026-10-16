@@ -1,0 +1,86 @@
+# Bridges: dictionaries that translate a problem into another field's language.
+# Each entry: id, name, dictionary (what maps to what), and notes on when it applies.
+# `unsure = true` marks an entry whose precise statement the author is not certain of.
+
+[[bridge]]
+id = "charvec_fp"
+name = "Set to characteristic vector over F_p"
+dictionary = """A subset A of [n] maps to v_A in F_p^n with v_A(i) = 1 if i is in A and 0 otherwise.
+Then v_A . v_A = |A| (mod p) and v_A . v_B = |A ∩ B| (mod p), where . is the standard dot product.
+Size and intersection conditions modulo p become conditions on dot products over F_p;
+a family of sets becomes a list of vectors in an n-dimensional space."""
+
+[[bridge]]
+id = "multilinear_poly"
+name = "Set to multilinear polynomial (Frankl–Wilson style)"
+dictionary = """Given a set L of forbidden-or-allowed intersection values, a subset A of [n] maps to
+the polynomial f_A(x) = prod_{l in L} (v_A . x - l) in variables x = (x_1..x_n), over F_p or Q,
+then multilinearised by replacing every x_i^j (j >= 1) with x_i; on {0,1}^n this changes no value.
+Evaluating at x = v_B gives f_A(v_B) = prod_{l in L} (|A ∩ B| - l).
+The f_A lie in the space of multilinear polynomials of degree at most |L|."""
+
+[[bridge]]
+id = "incidence_matrix"
+name = "Family to incidence matrix and Gram matrix"
+dictionary = """A family F = {A_1, ..., A_m} of subsets of [n] maps to the m x n incidence matrix M over a
+field K, M_ij = 1 if j is in A_i. Its Gram matrix G = M M^T has G_ii = |A_i| and G_ij = |A_i ∩ A_j|.
+Conditions on sizes and intersections become conditions on the entries of G; rank G <= rank M <= n."""
+
+[[bridge]]
+id = "graph_spectrum"
+name = "Conflict graph to adjacency spectrum"
+dictionary = """Make a graph whose vertices are the candidate objects (allowed subsets, group elements, ...)
+and whose edges join two objects that cannot both be chosen. Valid configurations constrained only by
+pairwise conditions are exactly the independent sets, so f = alpha(graph). The graph maps to its real
+symmetric adjacency matrix, with eigenvalues lambda_1 >= ... >= lambda_N. Symmetries of the problem
+act as automorphisms; a vertex-transitive or regular graph often has computable eigenvalues."""
+
+[[bridge]]
+id = "fourier_indicator"
+name = "Subset of an abelian group to indicator and Fourier coefficients"
+dictionary = """A subset A of a finite abelian group G maps to its indicator 1_A, with Fourier coefficients
+hat{1_A}(chi) = E_{x in G} 1_A(x) conj(chi(x)) over the characters chi of G; hat{1_A}(trivial) = |A|/|G|.
+The number T of triples (x, y, z) in A^3 with a x + b y = c z equals
+|G|^2 sum_chi hat{1_A}(chi^a) hat{1_A}(chi^b) hat{1_A}(conj(chi)^c).
+"No solutions except trivial ones" bounds T by the trivial count, which forces some large non-trivial
+Fourier coefficient (a density increment) or bounds |A|."""
+
+[[bridge]]
+id = "slice_rank"
+name = "No-solution condition to diagonal tensor (slice rank)"
+dictionary = """If A in F_q^n has no solution to x + y + z = 0 other than x = y = z (for q = 3: A is a cap set),
+then the function T(x, y, z) = [x + y + z = 0] restricted to A x A x A is a diagonal tensor with
+non-zero diagonal. Its slice rank is |A|, and slice rank does not increase under restriction, so
+|A| <= slice rank of [x + y + z = 0] on (F_q^n)^3, which a polynomial expansion of
+prod_i (1 - (x_i + y_i + z_i)^(q-1)) bounds by counting monomials."""
+
+[[bridge]]
+id = "probabilistic"
+name = "Counting to expectation"
+dictionary = """Choose an object at random (for example each element independently with probability t).
+A count of good minus bad features becomes an expectation E[X] - E[Y] by linearity; some outcome
+achieves at least the expectation. This produces existence results, i.e. LOWER bounds on f;
+it gives upper bounds only through first-moment arguments on a counted quantity."""
+
+[[bridge]]
+id = "double_counting"
+name = "Double counting and Cauchy–Schwarz"
+dictionary = """Count one set of incidences (pairs, triples, or (element, member) incidences) in two ways:
+summing over one side and over the other. Degree sequences d_1..d_N with sum D satisfy
+sum d_i^2 >= D^2 / N (Cauchy–Schwarz), turning a count of pairs with a shared element into an
+inequality between |F| and n."""
+
+[[bridge]]
+id = "translates"
+name = "Translates in a group"
+dictionary = """In an abelian group G (or in [1..n] with care at the ends), a condition forbidding x - y = a or
+x + y = z with fixed z can be rewritten as A ∩ (A + a) = ∅ or A ∩ (z - A) = ∅: the set and one of its
+images under a translation or reflection are disjoint subsets of the same ambient set, of equal size."""
+
+[[bridge]]
+id = "orbit_averaging"
+name = "Orbit averaging under a group action"
+dictionary = """If a group Gamma acts transitively on the ground set X and maps valid configurations to valid
+configurations, then for any fixed window W in X and any valid A, averaging |A ∩ gamma W| over gamma
+in Gamma gives |A| |W| / |X|. A local bound |A ∩ gamma W| <= t for every gamma becomes the global
+bound |A| <= t |X| / |W| (Katona's cycle method is the case of a cyclic order)."""

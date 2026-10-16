@@ -1,0 +1,28 @@
+{
+ "started": "2026-10-05T16:34:19",
+ "backend": "claude",
+ "model": "claude-sonnet-5-5",
+ "seed": 0,
+ "phase": "a4b",
+ "build": {
+  "paths": {
+   "a4b_seeds": "runs/run3-a4b/a4b_seeds.jsonl"
+  },
+  "clusters": null,
+  "replacements": null,
+  "seeds": 39,
+  "witnesses": 39
+ },
+ "probe": {
+  "model": "claude-haiku-4-5-20251001",
+  "ok": true,
+  "wall_s": 10.34
+ },
+ "a4b": {
+  "run": "a4b",
+  "problems": 80,
+  "completed": 80,
+  "calls": 480
+ },
+ "finished": "2026-10-05T18:27:53"
+}

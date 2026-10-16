@@ -1,0 +1,16 @@
+clusters: 12 built (seed 0, 6 parents per family, 4 children, at most 50 draws; run 2's 40 specs excluded)
+   1. setfam-2c81d0d691b0 (scan rank 22, 8 draws): 2c81d0d691b0, 643b5d4c9219, 00ce979a26cc, 070e75f7eb61, f4c966bb1b37
+   2. addfree-5a8c1dc9da5b (scan rank 24, 5 draws): 5a8c1dc9da5b, 49d121b60afd, 978b0fa51983, f915fac5a97e, 562a75083a05
+   3. addfree-301c2494f4b3 (scan rank 23, 38 draws): 301c2494f4b3, 07241a27b0fe, d83062936f2f, f9e9a32ef82f, efd31b13474f
+   4. setfam-d6506a5c484f (scan rank 26, 12 draws): d6506a5c484f, 5eb7c6319d64, fbbc3da514ef, fa9a20154a92, 28633f10091c
+   5. addfree-f7cb64d70afa (scan rank 25, 25 draws): f7cb64d70afa, 5d1c79e43233, 22c8176de22e, eee3f34812e5, 9146bd08f76c
+   6. setfam-9713162e020d (scan rank 23, 6 draws): 9713162e020d, 76accd7e794f, c21e8eb6f18a, 60ba88b02573, 77aaeeb28f74
+   7. setfam-1978ba82ea30 (scan rank 24, 19 draws): 1978ba82ea30, b4e95b8775c7, 084f2b5919b9, 9180373c142e, dbe8740d6483
+   8. addfree-87b10e814823 (scan rank 22, 4 draws): 87b10e814823, b84668247195, fcd0a06afe9f, 22ecaf78edcb, 45bdc882102a
+   9. setfam-65a4282530c8 (scan rank 25, 7 draws): 65a4282530c8, fa93db6d3cad, 7fa125f21f1c, 74cb9f32bc4d, 7a295f9e7168
+  10. setfam-e16149c360b2 (scan rank 21, 9 draws): e16149c360b2, 5f739bd2ebb5, a214ce064d59, 5e9ea843d6f9, 8b2d2a3b8a53
+  11. addfree-05534495f261 (scan rank 26, 6 draws): 05534495f261, 28f7dd5c40a3, b4bf5492b593, 4ae554d07060, c9ea9b438743
+  12. addfree-4fbf5042559c (scan rank 21, 7 draws): 4fbf5042559c, 14c06bccd334, de924ec2f94c, 12f857ca1fa0, c7e7bc64ab80
+replacements: 0
+witnesses at n_max: 60
+build wall 9.0s

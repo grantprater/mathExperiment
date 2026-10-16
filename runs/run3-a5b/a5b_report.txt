@@ -1,0 +1,25 @@
+store runs/run3-a5b/a5b
+A5b: 180 problem rows, 228 calls (228 parsed)
+models returned: claude-haiku-4-5-20251001 x228
+
+== A5b: clusters ==
+  12 clusters, 60 problems, 48 children; conditions run: N0 (60 scored), N1 (60 scored), N2 (60 scored)
+  N2 explanations: 48 written, 14 cut to 80 words, explain calls 48
+
+== A5b: paired N2 - N1 (primary; bits per child) ==
+  N2 - N1 over 48 children: mean -0.226 median -0.024 bits  (+11 / -33 / 0 4)  sign test p = 0.00126  Wilcoxon W+ = 217.5 p = 0.000867 (n = 44)
+
+== A5b: overlap split (low overlap < 0.5: transfer; high: lookup) ==
+  low overlap 26 children, high overlap 22
+  low  N1 - N0 over 26 children: mean -0.166 median +0.007 bits  (+14 / -11 / 0 1)  sign test p = 0.69  Wilcoxon W+ = 162.0 p = 0.995 (n = 25)
+  low  N2 - N0 over 26 children: mean -0.328 median -0.034 bits  (+8 / -16 / 0 2)  sign test p = 0.152  Wilcoxon W+ = 92.0 p = 0.101 (n = 24)
+  low  N2 - N1 over 26 children: mean -0.162 median -0.025 bits  (+5 / -18 / 0 3)  sign test p = 0.0106  Wilcoxon W+ = 57.0 p = 0.0123 (n = 23)
+  high N1 - N0 over 22 children: mean -0.398 median -0.015 bits  (+7 / -13 / 0 2)  sign test p = 0.263  Wilcoxon W+ = 55.0 p = 0.0637 (n = 20)
+  high N2 - N0 over 22 children: mean -0.700 median -0.104 bits  (+5 / -16 / 0 1)  sign test p = 0.0266  Wilcoxon W+ = 47.0 p = 0.0158 (n = 21)
+  high N2 - N1 over 22 children: mean -0.302 median -0.019 bits  (+6 / -15 / 0 1)  sign test p = 0.0784  Wilcoxon W+ = 60.5 p = 0.0558 (n = 21)
+
+== A5b: position (mean bits by position in the cluster; 1 = parent) ==
+  cond            pos 1           pos 2           pos 3           pos 4           pos 5
+  N0       1.080 (n=12)    1.151 (n=12)    1.860 (n=12)    1.398 (n=12)    1.692 (n=12)
+  N1       1.388 (n=12)    1.216 (n=12)    1.625 (n=12)    1.133 (n=12)    1.035 (n=12)
+  N2       1.465 (n=12)    0.938 (n=12)    1.384 (n=12)    0.902 (n=12)    0.881 (n=12)

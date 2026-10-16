@@ -1,0 +1,82 @@
+store store\a4-adaptive  (all runs)
+30 problems processed, 66 weaves, 100 calls (100 parsed)
+
+== Calibration (domain x kind x level x model) ==
+domain   kind             level     model                   n  scr   acc  conf    gap  brier  cov80  medlog2  runs z  chg p
+addfree  bound_holds      mechanism claude-sonnet-5-5      58   21  1.00  0.97  +0.03  0.001     --       --      --   1.00
+addfree  interval         value     claude-sonnet-5-5     140  140  0.98  0.80  +0.18  0.053   0.98    +0.00   -4.13   1.00
+addfree  mutation_effect  mechanism claude-sonnet-5-5      23   18  0.83  0.90  -0.06  0.095     --       --   -0.92   1.00
+addfree  recognition      ontology  claude-sonnet-5-5      21    4  1.00  0.93  +0.07  0.008     --       --      --     --
+setfam   bound_holds      mechanism claude-sonnet-5-5       8    8  1.00  0.98  +0.02  0.001     --       --      --     --
+setfam   interval         value     claude-sonnet-5-5      40   40  1.00  0.80  +0.20  0.040   1.00    +0.00      --   1.00
+setfam   mutation_effect  mechanism claude-sonnet-5-5       3    3  1.00  0.97  +0.03  0.001     --       --      --     --
+setfam   recognition      ontology  claude-sonnet-5-5       6    4  1.00  0.84  +0.16  0.046     --       --      --     --
+
+== Top surprises (mean |log2((pred+1)/(f+1))|) ==
+  0.18 (max 0.32) 63620c9dfcc4 variant  f={'1': 2, '2': 3, '3': 5}
+  0.16 (max 0.49) ac22d0c919ac variant  f={'4': 2, '5': 2, '6': 4, '7': 3, '8': 4, '9': 4, '10': 4, '11': 4, '12': 4, '13': 4, '14': 6, '15': 4, '16': 6, '17': 5, '18': 8, '19': 6, '20': 8}
+  0.00 (max 0.00) 436287e53b6f named   oddtown f={'3': 3, '4': 4, '5': 5, '6': 6, '7': 7}
+  0.00 (max 0.00) 9ed7dee11106 named   eventown f={'3': 2, '4': 4, '5': 4, '6': 8, '7': 8}
+  0.00 (max 0.00) b3128e808e36 named   reverse_oddtown f={'3': 3, '4': 3, '5': 5, '6': 5, '7': 7}
+  0.00 (max 0.00) 60ba88b02573 named   fisher_one f={'3': 3, '4': 4, '5': 5, '6': 6, '7': 7}
+  0.00 (max 0.00) 9a19976f52c0 named   fw_mod3 f={'3': 3, '4': 6, '5': 10, '6': 15, '7': 21}
+  0.00 (max 0.00) 5844ffafe50d named   cap_set f={'1': 2, '2': 4, '3': 9}
+
+== Weave status counts ==
+  named    n=13   consistent=13 violated=0 insufficient=0 error=0  wins=9  with_tight=8
+  variant  n=53   consistent=16 violated=0 insufficient=37 error=0  wins=11  with_tight=38
+
+== Reuse / importance of (bridge, lemma) pairs (wins only) ==
+  orbit_averaging      pigeonhole                 families=1 problems=10 (named 3, variant 7) best g/trivial=0.062
+  charvec_fp           gram_rank                  families=1 problems=4 (named 3, variant 1) best g/trivial=0.055
+  charvec_fp           diagonal_criterion         families=1 problems=3 (named 1, variant 2) best g/trivial=0.227
+  charvec_fp           multilinear_dim            families=1 problems=3 (named 1, variant 2) best g/trivial=0.227
+  orbit_averaging      disjoint_translates        families=1 problems=3 (named 1, variant 2) best g/trivial=0.500
+  orbit_averaging      sidon_counting             families=1 problems=2 (named 1, variant 1) best g/trivial=0.222
+  charvec_fp           fisher                     families=1 problems=1 (named 1, variant 0) best g/trivial=0.055
+  charvec_fp           self_orthogonal            families=1 problems=1 (named 1, variant 0) best g/trivial=0.125
+
+== A4: assume the prior, widen on surprise ==
+  adaptive  wins per 100 calls: 20.0  (20 wins / 100 calls, 1 runs)
+  adaptive, unsurprising (narrow): prior held 19/30 = 63%  (escalated 11)
+  fixed breadth: problems with a win from a bridge outside the prior
+    surprising    0/0
+    unsurprising  0/0
+
+== What-if tree ==
+  - 436287e53b6f oddtown f={'3': 3, '4': 4, '5': 5, '6': 6, '7': 7} surprise=0.00 mode=narrow
+  - 9ed7dee11106 eventown f={'3': 2, '4': 4, '5': 4, '6': 8, '7': 8} surprise=0.00 mode=narrow
+  - b3128e808e36 reverse_oddtown f={'3': 3, '4': 3, '5': 5, '6': 5, '7': 7} surprise=0.00 mode=narrow
+  - 60ba88b02573 fisher_one f={'3': 3, '4': 4, '5': 5, '6': 6, '7': 7} surprise=0.00 mode=narrow
+    - 69f0da3ee9f8 Allow pairwise intersections of size 0 or 1 instead of exactly 1, so d f={'3': 7, '4': 11, '5': 16, '6': 22, '7': 29} surprise=0.00 mode=narrow
+      - 60faa442a2cf Allow pairwise intersections of size 0, 1, or 2 instead of only 0 or 1 f={'3': 8, '4': 15, '5': 26, '6': 42, '7': 64} surprise=0.00 mode=narrow
+  - 9a19976f52c0 fw_mod3 f={'3': 3, '4': 6, '5': 10, '6': 15, '7': 21} surprise=0.00 mode=narrow
+    - 296a3e322cd9 Require pairwise intersections to be 0 mod 3 only, instead of 0 or 1 m f={'3': 1, '4': 2, '5': 2, '6': 3, '7': 3} surprise=0.00 mode=narrow
+  - 5844ffafe50d cap_set f={'1': 2, '2': 4, '3': 9} surprise=0.00 mode=narrow+esc
+    - 6d6e66149695 The field is F_5 instead of F_3, so we look for 3-AP-free sets in F_5^ f={'1': 2, '2': 6} surprise=0.00 mode=narrow+esc
+      - 65795a515fcb Work over F_7^n instead of F_5^n, so the ambient group is larger. f={'1': 3} surprise=0.00 mode=narrow+esc
+        - 794cce47b9b2 The condition changes from 3-AP-free to sum-free in F_7^n, where the b f={'1': 2} surprise=0.00 mode=narrow+esc
+          - 4e67177e2c1b Use the equation x+y=z in the general-equation form, where only the al (not processed)
+        - 0b4fc9264661 The condition changes to Sidon sets in F_7^n, which are much more rest f={'1': 3} surprise=0.00 mode=narrow+esc
+          - 84d39db5ac23 Forbid the non-trivial solutions of 2x+y=3z, a translation-invariant l (not processed)
+        - 743ef95921bd The 3-AP condition is written as the explicit equation x+y=2z with 'no f={'1': 3} surprise=0.00 mode=narrow+esc
+          - b421e30ac100 Change the equation to x+y=3z, which is not translation-invariant, so  (not processed)
+          - b8d13618c019 Change to x+2y=3z, a translation-invariant equation whose non-trivial  (not processed)
+      - 1b6a9053b316 Forbid x+y=z (sum-free) instead of 3-term progressions, which gives a  f={'1': 2, '2': 10} surprise=0.00 mode=narrow+esc
+        - 57a00f006466 Phrase sum-free as the generic equation x+y=z with 'not all equal', wh f={'1': 2, '2': 10} surprise=0.00 mode=narrow+esc
+      - ea78b31e7ee1 Require all pairwise sums to be distinct (Sidon sets), which is a much f={'1': 2, '2': 5} surprise=0.00 mode=narrow+esc
+      - f0826f82acbc State the 3-AP condition as the general equation x+y=2z with 'not all  f={'1': 2, '2': 6} surprise=0.00 mode=narrow+esc
+        - df9e95c5ad75 Use x+2y=3z. Mod 5 the solutions are 3-term APs in a different order,  (not processed)
+    - fa59ca37f533 The field is F_2. Then x+y=2z=0 forces x=y, which is excluded, so ther f={'1': 2, '2': 4, '3': 8, '4': 16} surprise=0.00 mode=narrow+esc
+      - cfa3f9be9298 Ask for a sum-free set in F_2^n instead of a set with no 3-term progre f={'1': 1, '2': 2, '3': 4, '4': 8} surprise=0.00 mode=narrow
+      - 7635b7118f66 Ask for a Sidon set in F_2^n. f={'1': 1, '2': 1, '3': 1, '4': 1} surprise=0.00 mode=narrow
+    - 65a24109f87d The condition is sum-free (x+y=z, with x=y allowed) instead of 3-AP-fr f={'1': 1, '2': 3, '3': 9} surprise=0.00 mode=narrow
+    - 63620c9dfcc4 The condition is Sidon (all pairwise sums distinct) instead of 3-AP-fr f={'1': 2, '2': 3, '3': 5} surprise=0.18 mode=narrow
+    - 19dd32f36e91 The same equation x+y=2z is written as a general linear equation with  f={'1': 2, '2': 4, '3': 9} surprise=0.00 mode=narrow
+  - 93f362bec5e1 sumfree_cyclic f={'4': 2, '5': 2, '6': 3, '7': 2, '8': 4, '9': 3, '10': 5, '11': 4, '12': 6, '13': 4, '14': 7, '15': 6, '16': 8, '17': 6, '18': 9, '19': 6, '20': 10} surprise=0.00 mode=narrow
+    - ac22d0c919ac Replace the sum-free condition with the no-3-term-arithmetic-progressi f={'4': 2, '5': 2, '6': 4, '7': 3, '8': 4, '9': 4, '10': 4, '11': 4, '12': 4, '13': 4, '14': 6, '15': 4, '16': 6, '17': 5, '18': 8, '19': 6, '20': 8} surprise=0.16 mode=narrow
+  - 12f857ca1fa0 salem_spencer f={'4': 3, '5': 4, '6': 4, '7': 4, '8': 4, '9': 5, '10': 5, '11': 6, '12': 6, '13': 7, '14': 8, '15': 8, '16': 8, '17': 8, '18': 8, '19': 8, '20': 9} surprise=0.00 mode=narrow
+    - 07241a27b0fe Replace the 3-term-AP-free condition with sum-free (x+y=z, x=y allowed f={'4': 2, '5': 3, '6': 3, '7': 4, '8': 4, '9': 5, '10': 5, '11': 6, '12': 6, '13': 7, '14': 7, '15': 8, '16': 8, '17': 9, '18': 9, '19': 10, '20': 10} surprise=0.00 mode=narrow
+  - f7cb64d70afa sidon_int f={'4': 3, '5': 3, '6': 3, '7': 4, '8': 4, '9': 4, '10': 4, '11': 4, '12': 5, '13': 5, '14': 5, '15': 5, '16': 5, '17': 5, '18': 6, '19': 6, '20': 6} surprise=0.00 mode=narrow
+    - 2a076338bdcd Work in Z_n with wraparound instead of the integers [n], so that sums  f={'4': 2, '5': 2, '6': 2, '7': 3, '8': 3, '9': 3, '10': 3, '11': 3, '12': 3, '13': 4, '14': 4, '15': 4, '16': 4, '17': 4, '18': 4, '19': 4, '20': 4} surprise=0.00 mode=narrow
+  (0 mutations rejected)
